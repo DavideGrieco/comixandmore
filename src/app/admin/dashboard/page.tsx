@@ -53,19 +53,22 @@ export default function AdminDashboard() {
     }
     try {
       const response = await fetchWithToken('/api/games?populate=*', token);
+      const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
       const parsed: Game[] = response.data.map((item: any) => ({
-        id: item.id.toString(),
-        titolo: item.attributes.titolo,
-        descrizioneBreve: item.attributes.descrizioneBreve,
-        categoria: item.attributes.categoria,
-        giocatori: item.attributes.giocatori,
-        durata: item.attributes.durata,
-        difficolta: item.attributes.difficolta,
-        rules: item.attributes.rules,
-        immagineCopertina:
-          item.attributes.immagineCopertina?.data?.attributes?.url || '',
-        immagineDettaglio:
-          item.attributes.immagineDettaglio?.data?.attributes?.url || '',
+        id: String(item.id),
+        titolo: item.titolo,
+        descrizioneBreve: item.descrizioneBreve,
+        categoria: item.categoria,
+        giocatori: item.giocatori,
+        durata: item.durata,
+        difficolta: item.difficolta,
+        rules: item.rules,
+        immagineCopertina: item.immagineCopertina?.url
+          ? `${baseUrl}${item.immagineCopertina.url}`
+          : '',
+        immagineDettaglio: item.immagineDettaglio?.url
+          ? `${baseUrl}${item.immagineDettaglio.url}`
+          : ''
       }));
       setGames(parsed);
     } catch (err: any) {
