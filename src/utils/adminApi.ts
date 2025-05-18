@@ -51,3 +51,18 @@ export const deleteGame = async (token: string, id: string) => {
     method: 'DELETE',
   });
 };
+
+export const uploadFile = async (token: string, file: File): Promise<number> => {
+  const formData = new FormData();
+  formData.append('files', file);
+  const res = await fetch(`${STRAPI_BASE_URL}/api/upload`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`Upload file fallito: ${res.status}`);
+  const data = await res.json();
+  return data[0].id; // restituisce l'ID del file appena caricato
+};
