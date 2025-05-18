@@ -1,4 +1,3 @@
-// src/app/admin/dashboard/page.tsx
 'use client';
 
 import { useEffect, useState, ChangeEvent, FormEvent } from 'react';
@@ -6,14 +5,13 @@ import {
   fetchWithToken,
   uploadFile,
   createGame,
-  updateGame,
+  updateGameByDocumentId,
   deleteGame,
-    updateGameByDocumentId,
 } from '../../../utils/adminApi';
 import type { Game } from '../../../types/game';
 
 interface FormData {
-  id?: string;
+  documentId?: string;
   titolo: string;
   descrizioneBreve: string;
   categoria: string;
@@ -45,7 +43,6 @@ export default function AdminDashboard() {
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 
-  // --- Fetch lista giochi ---
   const fetchGames = async () => {
     if (!token) {
       setError('Token non trovato. Effettua di nuovo il login.');
@@ -57,6 +54,7 @@ export default function AdminDashboard() {
       const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
       const parsed: Game[] = response.data.map((item: any) => ({
         id: String(item.id),
+        documentId: item.documentId,
         titolo: item.titolo,
         descrizioneBreve: item.descrizioneBreve,
         categoria: item.categoria,
@@ -83,7 +81,6 @@ export default function AdminDashboard() {
     fetchGames();
   }, []);
 
-  // --- Handlers form ---
   const openNewForm = () => {
     setFormData({
       titolo: '',
@@ -101,7 +98,7 @@ export default function AdminDashboard() {
 
   const openEditForm = (game: Game) => {
     setFormData({
-      id: game.id,
+      documentId: game.documentId,
       titolo: game.titolo,
       descrizioneBreve: game.descrizioneBreve,
       categoria: game.categoria,
@@ -129,6 +126,7 @@ export default function AdminDashboard() {
     const { name, value } = e.target;
     setFormData((f) => ({ ...f, [name]: value }));
   };
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     if (!files) return;
@@ -141,7 +139,6 @@ export default function AdminDashboard() {
     setFormError('');
 
     try {
-      // 1) upload file se presenti
       let coverId: number | undefined;
       let detailId: number | undefined;
       if (formData.coverFile) {
@@ -151,7 +148,6 @@ export default function AdminDashboard() {
         detailId = await uploadFile(token!, formData.detailFile);
       }
 
-      // 2) costruisco payload
       const payload: any = {
         titolo: formData.titolo,
         descrizioneBreve: formData.descrizioneBreve,
@@ -164,17 +160,15 @@ export default function AdminDashboard() {
       if (coverId) payload.immagineCopertina = coverId;
       if (detailId) payload.immagineDettaglio = detailId;
 
-      console.log('Update ID:', formData.id, typeof formData.id);
+      if (formData.documentId) {
+        console.log('➡️ Updating game with documentId:', formData.documentId);
+        console.log('✏️ Form documentId:', formData.documentId);
 
-      // 3) create o update
-      if (formData.id) {
-        await updateGameByDocumentId(token!, formData.id!, payload);
-
+        await updateGameByDocumentId(token!, formData.documentId, payload);
       } else {
         await createGame(token!, payload);
       }
 
-      // 4) refresh lista e chiudi form
       await fetchGames();
       setFormOpen(false);
     } catch (err: any) {
@@ -189,7 +183,6 @@ export default function AdminDashboard() {
 
       {error && <p className="text-red-400">{error}</p>}
 
-      {/* Bottone per aprire il form */}
       <button
         onClick={openNewForm}
         className="inline-block bg-brand-blue text-white px-4 py-2 rounded"
@@ -197,55 +190,34 @@ export default function AdminDashboard() {
         + Nuovo Gioco
       </button>
 
-      {/* FORM */}
       {formOpen && (
         <form
           onSubmit={handleSubmit}
           className="bg-gray-800 p-6 rounded shadow space-y-4 max-w-2xl"
         >
           <h2 className="text-xl font-semibold">
-            {formData.id ? 'Modifica Gioco' : 'Crea Nuovo Gioco'}
+            {formData.documentId ? 'Modifica Gioco' : 'Crea Nuovo Gioco'}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <label className="flex flex-col">
-              <span>Titolo</span>
-              <input
-                name="titolo"
-                value={formData.titolo}
-                onChange={handleChange}
-                required
-                className="p-2 bg-gray-700 rounded"
-              />
-            </label>
-            <label className="flex flex-col">
-              <span>Categoria</span>
-              <input
-                name="categoria"
-                value={formData.categoria}
-                onChange={handleChange}
-                required
-                className="p-2 bg-gray-700 rounded"
-              />
-            </label>
-            <label className="flex flex-col">
-              <span>Giocatori</span>
-              <input
-                name="giocatori"
-                value={formData.giocatori}
-                onChange={handleChange}
-                className="p-2 bg-gray-700 rounded"
-              />
-            </label>
-            <label className="flex flex-col">
-              <span>Durata</span>
-              <input
-                name="durata"
-                value={formData.durata}
-                onChange={handleChange}
-                className="p-2 bg-gray-700 rounded"
-              />
-            </label>
+            {[
+              { label: 'Titolo', name: 'titolo' },
+              { label: 'Categoria', name: 'categoria' },
+              { label: 'Giocatori', name: 'giocatori' },
+              { label: 'Durata', name: 'durata' },
+            ].map(({ label, name }) => (
+              <label key={name} className="flex flex-col">
+                <span>{label}</span>
+                <input
+                  name={name}
+                  value={(formData as any)[name]}
+                  onChange={handleChange}
+                  className="p-2 bg-gray-700 rounded"
+                  required={name === 'titolo' || name === 'categoria'}
+                />
+              </label>
+            ))}
+
             <label className="flex flex-col md:col-span-2">
               <span>Descrizione Breve</span>
               <textarea
@@ -255,6 +227,7 @@ export default function AdminDashboard() {
                 className="p-2 bg-gray-700 rounded"
               />
             </label>
+
             <label className="flex flex-col md:col-span-2">
               <span>Rules</span>
               <textarea
@@ -264,6 +237,7 @@ export default function AdminDashboard() {
                 className="p-2 bg-gray-700 rounded"
               />
             </label>
+
             <label className="flex flex-col">
               <span>Copertina</span>
               <input
@@ -307,7 +281,6 @@ export default function AdminDashboard() {
         </form>
       )}
 
-      {/* TABELLA GIOCHI */}
       {loadingList ? (
         <p>Caricamento giochi...</p>
       ) : (

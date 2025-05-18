@@ -51,22 +51,29 @@ export const updateGameByDocumentId = async (
   documentId: string,
   data: any
 ) => {
-  // Qui NON serve accedere a .attributes
-  const queryRes = await fetchWithToken(`/api/games`, token);
+  // Ottieni i giochi, incluse le bozze
+  const queryRes = await fetchWithToken('/api/games?pagination[pageSize]=100&publicationState=preview', token);
 
+  // 👇 Corretto accesso alla struttura tipica di Strapi (con attributes)
   const match = queryRes.data.find((g: any) => g.documentId === documentId);
 
+
   if (!match) {
+    console.log('❌ documentId cercato:', documentId);
+    console.log('📦 disponibili:', queryRes.data.map((g: any) => g.attributes?.documentId));
     throw new Error(`Nessun gioco trovato con documentId "${documentId}"`);
   }
 
   const gameId = match.id;
 
-  return fetchWithToken(`/api/games/${gameId}`, token, {
+  console.log('✅ Updating game with real ID:', gameId);
+
+  return fetchWithToken(`/api/games/${documentId}`, token, {
     method: 'PUT',
     body: JSON.stringify({ data }),
   });
 };
+
 
 
 export const deleteGame = async (token: string, id: string) => {

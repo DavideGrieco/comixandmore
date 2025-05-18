@@ -1,5 +1,6 @@
 export interface Game {
   id: string;
+  documentId: string; // ID del documento in Strapi
   titolo: string;
   immagineCopertina: string;
   immagineDettaglio: string;
