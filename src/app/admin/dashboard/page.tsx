@@ -1,20 +1,42 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { fetchStrapi } from '../../utils/adminApi';
-import type { Game } from '../../types/game';
+import { fetchWithToken } from '../../../utils/adminApi';
+import type { Game } from '../../../types/game';
 
 export default function AdminDashboard() {
   const [games, setGames] = useState<Game[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchGames = async () => {
+      const token = localStorage.getItem('strapi_jwt');
+
+      if (!token) {
+        setError('Token non trovato. Effettua di nuovo il login.');
+        setLoading(false);
+        return;
+      }
+
       try {
-        const data = await fetchStrapi('/api/games');
-        setGames(data);
-      } catch (error) {
-        console.error('Errore nel recupero dei giochi:', error);
+        const response = await fetchWithToken('/api/games?populate=*', token);
+        const parsedGames: Game[] = response.data.map((item: any) => ({
+          id: item.id.toString(),
+          titolo: item.attributes.titolo,
+          descrizioneBreve: item.attributes.descrizioneBreve,
+          categoria: item.attributes.categoria,
+          giocatori: item.attributes.giocatori,
+          durata: item.attributes.durata,
+          difficolta: item.attributes.difficolta,
+          rules: item.attributes.rules,
+          immagineCopertina: item.attributes.immagineCopertina?.data?.attributes?.url || '',
+          immagineDettaglio: item.attributes.immagineDettaglio?.data?.attributes?.url || '',
+        }));
+
+        setGames(parsedGames);
+      } catch (err: any) {
+        setError(err.message || 'Errore durante il recupero dei giochi');
       } finally {
         setLoading(false);
       }
@@ -27,6 +49,7 @@ export default function AdminDashboard() {
     <main className="min-h-screen bg-gray-900 text-white p-8">
       <h1 className="text-2xl font-bold mb-6">Dashboard Amministratore</h1>
 
+      {error && <p className="text-red-500 mb-4">{error}</p>}
       {loading ? (
         <p>Caricamento giochi...</p>
       ) : (
