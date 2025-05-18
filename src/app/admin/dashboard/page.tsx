@@ -163,6 +163,8 @@ export default function AdminDashboard() {
       if (coverId) payload.immagineCopertina = coverId;
       if (detailId) payload.immagineDettaglio = detailId;
 
+      console.log('Update ID:', formData.id, typeof formData.id);
+
       // 3) create o update
       if (formData.id) {
         await updateGame(token!, Number(formData.id), payload);
