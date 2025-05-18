@@ -11,7 +11,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const fetchGames = async () => {
-      const token = localStorage.getItem('strapi_jwt');
+      const token = localStorage.getItem('token');
 
       if (!token) {
         setError('Token non trovato. Effettua di nuovo il login.');
