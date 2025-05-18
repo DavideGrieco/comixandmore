@@ -46,6 +46,28 @@ export const updateGame = async (token: string, id: string | number, data: any) 
   });
 };
 
+export const updateGameByDocumentId = async (
+  token: string,
+  documentId: string,
+  data: any
+) => {
+  // 1. Recupera l’id interno da Strapi usando documentId
+  const queryRes = await fetchWithToken(`/api/games?filters[documentId][$eq]=${documentId}`, token);
+  const match = queryRes.data?.[0];
+
+  if (!match) {
+    throw new Error(`Nessun gioco trovato con documentId "${documentId}"`);
+  }
+
+  const gameId = match.id;
+
+  // 2. Fai l'update sull'id interno
+  return fetchWithToken(`/api/games/${gameId}`, token, {
+    method: 'PUT',
+    body: JSON.stringify({ data }),
+  });
+};
+
 
 export const deleteGame = async (token: string, id: string) => {
   return fetchWithToken(`/api/games/${id}`, token, {

@@ -8,6 +8,7 @@ import {
   createGame,
   updateGame,
   deleteGame,
+    updateGameByDocumentId,
 } from '../../../utils/adminApi';
 import type { Game } from '../../../types/game';
 
@@ -167,7 +168,8 @@ export default function AdminDashboard() {
 
       // 3) create o update
       if (formData.id) {
-        await updateGame(token!, Number(formData.id), payload);
+        await updateGameByDocumentId(token!, formData.id!, payload);
+
       } else {
         await createGame(token!, payload);
       }
