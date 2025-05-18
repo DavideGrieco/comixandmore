@@ -24,7 +24,7 @@ export default function GiochiPage() {
       try {
         const json = await fetchStrapi('/api/games?populate=*');
 
-        const parsedGames: Game[] = json.data.map((item: any) => {
+        const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => {
             const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
             return {
@@ -44,7 +44,6 @@ export default function GiochiPage() {
                 : '/img/placeholder.jpg',
             };
             });
-
 
 
         setGames(parsedGames);
