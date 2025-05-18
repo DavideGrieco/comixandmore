@@ -51,9 +51,10 @@ export const updateGameByDocumentId = async (
   documentId: string,
   data: any
 ) => {
-  // 1. Recupera l’id interno da Strapi usando documentId
-  const queryRes = await fetchWithToken(`/api/games?filters[documentId][$eq]=${documentId}`, token);
-  const match = queryRes.data?.[0];
+  // Qui NON serve accedere a .attributes
+  const queryRes = await fetchWithToken(`/api/games`, token);
+
+  const match = queryRes.data.find((g: any) => g.documentId === documentId);
 
   if (!match) {
     throw new Error(`Nessun gioco trovato con documentId "${documentId}"`);
@@ -61,7 +62,6 @@ export const updateGameByDocumentId = async (
 
   const gameId = match.id;
 
-  // 2. Fai l'update sull'id interno
   return fetchWithToken(`/api/games/${gameId}`, token, {
     method: 'PUT',
     body: JSON.stringify({ data }),
