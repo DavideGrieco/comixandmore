@@ -24,27 +24,27 @@ export default function GiochiPage() {
       try {
         const json = await fetchStrapi('/api/games?populate=*');
 
-        const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => {
-            const attrs = item.attributes;
+        const parsedGames: Game[] = json.data.map((item: any) => {
             const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
             return {
                 id: item.id.toString(),
-                titolo: attrs.titolo,
-                descrizioneBreve: attrs.descrizioneBreve,
-                categoria: attrs.categoria,
-                giocatori: attrs.giocatori,
-                durata: attrs.durata,
-                difficolta: attrs.difficolta,
-                rules: attrs.rules,
-                immagineCopertina: attrs.immagineCopertina?.data?.attributes?.url
-                ? `${baseUrl}${attrs.immagineCopertina.data.attributes.url}`
+                titolo: item.titolo,
+                descrizioneBreve: item.descrizioneBreve,
+                categoria: item.categoria,
+                giocatori: item.giocatori,
+                durata: item.durata,
+                difficolta: item.difficolta,
+                rules: item.rules,
+                immagineCopertina: item.immagineCopertina?.url
+                ? `${baseUrl}${item.immagineCopertina.url}`
                 : '/img/placeholder.jpg',
-                immagineDettaglio: attrs.immagineDettaglio?.data?.attributes?.url
-                ? `${baseUrl}${attrs.immagineDettaglio.data.attributes.url}`
+                immagineDettaglio: item.immagineDettaglio?.url
+                ? `${baseUrl}${item.immagineDettaglio.url}`
                 : '/img/placeholder.jpg',
             };
             });
+
 
 
         setGames(parsedGames);
