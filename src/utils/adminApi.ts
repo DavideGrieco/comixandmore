@@ -29,8 +29,13 @@ export const fetchWithToken = async (endpoint: string, token: string, options: R
     throw new Error(`Errore fetch su ${endpoint}: ${res.status}`);
   }
 
-  return res.json();
+  // Evita .json() se il corpo è vuoto (es. 204 No Content)
+  if (res.status === 204) return null;
+
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 };
+
 
 export const createGame = async (token: string, data: any) => {
   return fetchWithToken('/api/games', token, {
@@ -81,6 +86,26 @@ export const deleteGame = async (token: string, id: string) => {
     method: 'DELETE',
   });
 };
+
+export const deleteGameByDocumentId = async (token: string, documentId: string) => {
+  // Ottieni i giochi (inclusi quelli in bozza)
+  const queryRes = await fetchWithToken('/api/games?pagination[pageSize]=100&publicationState=preview', token);
+
+  const match = queryRes.data.find((g: any) => g.documentId === documentId);
+
+  if (!match) {
+    console.log('❌ documentId cercato per delete:', documentId);
+    console.log('📦 disponibili:', queryRes.data.map((g: any) => g.documentId));
+    throw new Error(`Nessun gioco trovato con documentId "${documentId}"`);
+  }
+
+  console.log('🗑️ Eliminazione gioco con ID:', match.id);
+
+  return fetchWithToken(`/api/games/${documentId}`, token, {
+    method: 'DELETE',
+  });
+};
+
 
 export const uploadFile = async (token: string, file: File): Promise<number> => {
   const formData = new FormData();

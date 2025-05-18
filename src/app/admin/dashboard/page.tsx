@@ -7,6 +7,7 @@ import {
   createGame,
   updateGameByDocumentId,
   deleteGame,
+  deleteGameByDocumentId
 } from '../../../utils/adminApi';
 import type { Game } from '../../../types/game';
 
@@ -112,15 +113,16 @@ export default function AdminDashboard() {
     setFormOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (documentId: string) => {
     if (!confirm('Sei sicuro di voler eliminare questo gioco?')) return;
     try {
-      await deleteGame(token!, id);
-      fetchGames();
+        await deleteGameByDocumentId(token!, documentId);
+        fetchGames();
     } catch (err: any) {
-      alert(err.message || 'Errore durante l\'eliminazione');
+        alert(err.message || 'Errore durante l\'eliminazione');
     }
-  };
+    };
+
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -305,9 +307,9 @@ export default function AdminDashboard() {
                     Modifica
                   </button>
                   <button
-                    onClick={() => handleDelete(g.id)}
+                    onClick={() => handleDelete(g.documentId)}
                     className="bg-red-500 px-2 py-1 rounded"
-                  >
+                    >
                     Elimina
                   </button>
                 </td>
