@@ -165,7 +165,7 @@ export default function AdminDashboard() {
 
       // 3) create o update
       if (formData.id) {
-        await updateGame(token!, formData.id, payload);
+        await updateGame(token!, Number(formData.id), payload);
       } else {
         await createGame(token!, payload);
       }

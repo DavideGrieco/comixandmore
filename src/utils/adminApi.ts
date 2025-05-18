@@ -39,12 +39,13 @@ export const createGame = async (token: string, data: any) => {
   });
 };
 
-export const updateGame = async (token: string, id: string, data: any) => {
+export const updateGame = async (token: string, id: string | number, data: any) => {
   return fetchWithToken(`/api/games/${id}`, token, {
     method: 'PUT',
     body: JSON.stringify({ data }),
   });
 };
+
 
 export const deleteGame = async (token: string, id: string) => {
   return fetchWithToken(`/api/games/${id}`, token, {
