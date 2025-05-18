@@ -1,39 +1,57 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { fetchStrapi } from '../../utils/adminApi';
+import type { Game } from '../../types/game';
 
-export default function AdminDashboardPage() {
-  const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+export default function AdminDashboard() {
+  const [games, setGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const exp = localStorage.getItem('token_expiration');
+    const fetchGames = async () => {
+      try {
+        const data = await fetchStrapi('/api/games');
+        setGames(data);
+      } catch (error) {
+        console.error('Errore nel recupero dei giochi:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const isValid =
-      token && exp && parseInt(exp) > Date.now();
-
-    if (!isValid) {
-      router.replace('/admin');
-    } else {
-      setAuthorized(true);
-    }
-  }, [router]);
-
-  if (!authorized) {
-    return (
-      <main className="min-h-screen bg-gray-900 text-gray-300 flex items-center justify-center">
-        <p>Controllo credenziali in corso...</p>
-      </main>
-    );
-  }
+    fetchGames();
+  }, []);
 
   return (
     <main className="min-h-screen bg-gray-900 text-white p-8">
-      <h1 className="text-3xl font-bold mb-6">Dashboard Amministratore</h1>
-      <p>Benvenuto nella sezione di gestione del catalogo!</p>
-      {/* Qui aggiungerai la gestione CRUD del catalogo */}
+      <h1 className="text-2xl font-bold mb-6">Dashboard Amministratore</h1>
+
+      {loading ? (
+        <p>Caricamento giochi...</p>
+      ) : (
+        <table className="w-full table-auto border-collapse">
+          <thead>
+            <tr>
+              <th className="border px-4 py-2">Titolo</th>
+              <th className="border px-4 py-2">Categoria</th>
+              <th className="border px-4 py-2">Azioni</th>
+            </tr>
+          </thead>
+          <tbody>
+            {games.map((game) => (
+              <tr key={game.id}>
+                <td className="border px-4 py-2">{game.titolo}</td>
+                <td className="border px-4 py-2">{game.categoria}</td>
+                <td className="border px-4 py-2">
+                  <button className="bg-blue-500 text-white px-2 py-1 rounded mr-2">Modifica</button>
+                  <button className="bg-red-500 text-white px-2 py-1 rounded">Elimina</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }
