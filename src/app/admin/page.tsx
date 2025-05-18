@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { loginToStrapi } from '../../utils/adminApi';
 
 export default function AdminLoginPage() {
@@ -8,6 +9,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,10 +17,20 @@ export default function AdminLoginPage() {
     setMessage('');
 
     try {
-      const result = await loginToStrapi(identifier, password);
-      console.log('Login successo:', result);
+      const { jwt } = await loginToStrapi(identifier, password);
+
+      // Salva token e scadenza di 1 giorno
+      localStorage.setItem('token', jwt);
+      const expires = Date.now() + 1000 * 60 * 60 * 24;
+      localStorage.setItem('token_expiration', expires.toString());
+
       setStatus('success');
       setMessage('Login effettuato con successo!');
+
+      // Redirect alla dashboard dopo un breve delay
+      setTimeout(() => {
+        router.push('/admin/dashboard');
+      }, 800);
     } catch (err: any) {
       console.error('Login fallito:', err.message);
       setStatus('error');
@@ -65,7 +77,11 @@ export default function AdminLoginPage() {
         </button>
 
         {status !== 'idle' && (
-          <p className={`mt-4 text-sm text-center ${status === 'success' ? 'text-green-400' : 'text-red-400'}`}>
+          <p
+            className={`mt-4 text-sm text-center ${
+              status === 'success' ? 'text-green-400' : 'text-red-400'
+            }`}
+          >
             {message}
           </p>
         )}
