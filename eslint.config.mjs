@@ -17,6 +17,7 @@ export default [
   {
     rules: {
       "react/no-unescaped-entities": 0,    // o "off"
+      "@typescript-eslint/no-unused-vars": "off"
     },
   },
 ];

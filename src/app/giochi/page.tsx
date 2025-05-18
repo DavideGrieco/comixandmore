@@ -9,7 +9,7 @@ import Navbar from '../../components/Navbar';
 import GameCard from '../../components/GameCard';
 import GameModal from '../../components/GameModal';
 import { fetchStrapi } from '../../utils/api';
-
+import type { Game } from '../../types/game';
 import type { StrapiGameItem } from '../../types/strapi';
 
 export default function GiochiPage() {
