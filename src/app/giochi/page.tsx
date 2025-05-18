@@ -10,6 +10,7 @@ import GameCard from '../../components/GameCard';
 import GameModal from '../../components/GameModal';
 import { fetchStrapi } from '../../utils/api';
 import type { Game } from '../../types/game';
+import type { StrapiGameItem } from '../../types/strapi';
 
 export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
@@ -23,23 +24,24 @@ export default function GiochiPage() {
       try {
         const json = await fetchStrapi('/api/games?populate=*');
 
-        const parsedGames: Game[] = json.data.map((item: any) => {
+        const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => {
+            const attrs = item.attributes;
             const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
 
             return {
                 id: item.id.toString(),
-                titolo: item.titolo,
-                descrizioneBreve: item.descrizioneBreve,
-                categoria: item.categoria,
-                giocatori: item.giocatori,
-                durata: item.durata,
-                difficolta: item.difficolta,
-                rules: item.rules,
-                immagineCopertina: item.immagineCopertina?.url
-                ? `${baseUrl}${item.immagineCopertina.url}`
+                titolo: attrs.titolo,
+                descrizioneBreve: attrs.descrizioneBreve,
+                categoria: attrs.categoria,
+                giocatori: attrs.giocatori,
+                durata: attrs.durata,
+                difficolta: attrs.difficolta,
+                rules: attrs.rules,
+                immagineCopertina: attrs.immagineCopertina?.data?.attributes?.url
+                ? `${baseUrl}${attrs.immagineCopertina.data.attributes.url}`
                 : '/img/placeholder.jpg',
-                immagineDettaglio: item.immagineDettaglio?.url
-                ? `${baseUrl}${item.immagineDettaglio.url}`
+                immagineDettaglio: attrs.immagineDettaglio?.data?.attributes?.url
+                ? `${baseUrl}${attrs.immagineDettaglio.data.attributes.url}`
                 : '/img/placeholder.jpg',
             };
             });
