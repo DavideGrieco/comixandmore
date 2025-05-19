@@ -367,7 +367,7 @@ export default function AdminDashboard() {
           ) : null}
         </section>
       </main>
-
+            
       {/* MODALE PER IL FORM */}
       {formOpen && (
         <div
