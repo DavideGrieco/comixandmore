@@ -23,21 +23,16 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
     console.warn(`GameCard per "${game.titolo}": Ricevuto gradientIndex non valido (${gradientIndex}), usando gradiente di default.`);
   }
 
-  // Clip-path per il taglio obliquo.
-  // Il primo valore Y (0% 25%) definisce quanto in basso inizia il taglio a sinistra.
-  // Il secondo valore Y (100% 5%) definisce quanto in basso inizia il taglio a destra.
-  // Percentuali più piccole per Y significano che il taglio inizia più in alto sull'area colorata.
+  // Clip-path per il taglio obliquo
   const clipPathBottomStyle = {
     clipPath: 'polygon(0% 25%, 100% 5%, 100% 100%, 0% 100%)',
-    // Aumentando il primo Y (es. 0% 35%) e diminuendo il secondo Y (es. 100% 0%)
-    // si aumenta l'inclinazione e si riduce l'altezza del taglio sul lato destro.
   };
 
   return (
     <div
       onClick={() => onClick(game.id)}
       className="
-        relative w-full md:w-72 lg:w-80 h-[260px] // Altezza card leggermente ridotta
+        relative w-full h-[260px]
         rounded-2xl overflow-hidden shadow-xl cursor-pointer 
         group transition-all duration-300 ease-in-out hover:shadow-2xl
       "
@@ -50,21 +45,18 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
       <div
         className={`
           absolute bottom-0 left-0 right-0 
-          h-[55%] // RIDOTTA l'altezza dell'area colorata
+          h-[55%]
           bg-gradient-to-br ${selectedGradient.from} ${selectedGradient.to}
           transition-all duration-300 ease-in-out z-10
-          group-hover:h-[61%] // Effetto hover corrispondente
+          group-hover:h-[61%]
         `}
         style={clipPathBottomStyle}
       >
-        {/* Padding interno. Il padding-top è cruciale. */}
-        <div className="h-full p-4 pt-[30px] md:pt-[35px] flex flex-col justify-between"> {/* RIDOTTO padding-top */}
+        <div className="h-full p-4 pt-[45px] flex flex-col justify-between">
           <div>
             <h3 
               className={`text-lg font-bold ${selectedGradient.buttonText} mb-1 truncate`} 
               title={game.titolo}
-              // Aggiungi un po' di altezza minima se il titolo può essere molto corto
-              // style={{ minHeight: '1.75rem' }} // Equivalente a h-7
             >
               {game.titolo}
             </h3>
