@@ -102,8 +102,8 @@ export default function GiochiPage() {
                 data-aos="fade-up"
                 data-aos-delay={400}
               >
-                {games.map((game) => (
-                  <GameCard key={game.id} game={game} onClick={openModal} />
+                {games.map((game, index) => (
+                  <GameCard key={game.id} game={game} onClick={openModal} gradientIndex={index}/>
                 ))}
               </div>
             )}
