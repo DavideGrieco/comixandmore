@@ -5,11 +5,11 @@ import Link from 'next/link';
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const navLinks = [
-    { label: 'Chi Siamo', href: '#chi-siamo' },
+    { label: 'Chi Siamo', href: '/#chi-siamo' },
     { label: 'Catalogo Giochi', href: '/giochi' },
-    { label: 'Il Bar', href: '#bar' },
-    { label: 'Eventi', href: '#eventi' },
-    { label: 'Contatti', href: '#contatti' },
+    { label: 'Il Bar', href: '/#bar' },
+    { label: 'Eventi', href: '/#eventi' },
+    { label: 'Contatti', href: '/#contatti' },
   ];
 
   return (
