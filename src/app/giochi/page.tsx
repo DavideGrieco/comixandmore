@@ -16,6 +16,8 @@ export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [minPlayerOptions, setMinPlayerOptions] = useState<number[]>([]);
+  const [selectedMinPlayers, setSelectedMinPlayers] = useState<number | ''>('');
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,16 +48,23 @@ export default function GiochiPage() {
         }));
         setGames(parsedGames);
         const uniqueCategories = Array.from(
-
           new Set(
             parsedGames
               .flatMap((g) => g.categoria.split(/\s+/))
               .map((c) => c.trim())
               .filter(Boolean),
           ),
-
         );
         setCategories(uniqueCategories);
+
+        const uniqueMinPlayers = Array.from(
+          new Set(
+            parsedGames
+              .map((g) => parseInt(g.giocatori.split('-')[0], 10))
+              .filter((n) => !isNaN(n)),
+          ),
+        ).sort((a, b) => a - b);
+        setMinPlayerOptions(uniqueMinPlayers);
       } catch (err) {
         console.error('Errore fetch giochi:', err);
         setError('Errore nel caricamento dei giochi');
@@ -67,16 +76,20 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
-  const filteredGames = selectedCategory
-
-    ? games.filter((g) =>
-        g.categoria
-          .split(/\s+/)
-          .map((c) => c.trim())
-          .includes(selectedCategory),
-      )
-
-    : games;
+  const filteredGames = games
+    .filter((g) =>
+      selectedCategory
+        ? g.categoria
+            .split(/\s+/)
+            .map((c) => c.trim())
+            .includes(selectedCategory)
+        : true,
+    )
+    .filter((g) =>
+      selectedMinPlayers !== ''
+        ? parseInt(g.giocatori.split('-')[0], 10) === selectedMinPlayers
+        : true,
+    );
 
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
@@ -125,23 +138,51 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-                <div className="mb-6" data-aos="fade-up" data-aos-delay={350}>
-                  <label htmlFor="categorySelect" className="sr-only">
-                    Filtra per categoria
-                  </label>
-                  <select
-                    id="categorySelect"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                  >
-                    <option value="">Tutte le categorie</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                <div
+                  className="flex flex-col sm:flex-row gap-4 mb-6"
+                  data-aos="fade-up"
+                  data-aos-delay={350}
+                >
+                  <div>
+                    <label htmlFor="categorySelect" className="sr-only">
+                      Filtra per categoria
+                    </label>
+                    <select
+                      id="categorySelect"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutte le categorie</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="playerSelect" className="sr-only">
+                      Minimo giocatori
+                    </label>
+                    <select
+                      id="playerSelect"
+                      value={selectedMinPlayers}
+                      onChange={(e) =>
+                        setSelectedMinPlayers(
+                          e.target.value === '' ? '' : parseInt(e.target.value, 10),
+                        )
+                      }
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutti i giocatori</option>
+                      {minPlayerOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n}+
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
                 <div
                   id="lista-giochi-container"
