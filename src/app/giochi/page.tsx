@@ -17,8 +17,10 @@ export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [playersBounds, setPlayersBounds] = useState<[number, number]>([0, 0]);
-  const [selectedPlayers, setSelectedPlayers] = useState<[number, number]>([0, 0]);
+
+  const [minPlayerOptions, setMinPlayerOptions] = useState<number[]>([]);
+  const [selectedMinPlayers, setSelectedMinPlayers] = useState<number | ''>('');
+
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -63,16 +65,23 @@ export default function GiochiPage() {
         setPlayersBounds([minPlayers, maxPlayers]);
         setSelectedPlayers([minPlayers, maxPlayers]);
         const uniqueCategories = Array.from(
-
           new Set(
             parsedGames
               .flatMap((g) => g.categoria.split(/\s+/))
               .map((c) => c.trim())
               .filter(Boolean),
           ),
-
         );
         setCategories(uniqueCategories);
+
+        const uniqueMinPlayers = Array.from(
+          new Set(
+            parsedGames
+              .map((g) => parseInt(g.giocatori.split('-')[0], 10))
+              .filter((n) => !isNaN(n)),
+          ),
+        ).sort((a, b) => a - b);
+        setMinPlayerOptions(uniqueMinPlayers);
       } catch (err) {
         console.error('Errore fetch giochi:', err);
         setError('Errore nel caricamento dei giochi');
@@ -84,14 +93,22 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
-  const gamesByCategory = selectedCategory
-    ? games.filter((g) =>
-        g.categoria
-          .split(/\s+/)
-          .map((c) => c.trim())
-          .includes(selectedCategory),
-      )
-    : games;
+
+  const filteredGames = games
+    .filter((g) =>
+      selectedCategory
+        ? g.categoria
+            .split(/\s+/)
+            .map((c) => c.trim())
+            .includes(selectedCategory)
+        : true,
+    )
+    .filter((g) =>
+      selectedMinPlayers !== ''
+        ? parseInt(g.giocatori.split('-')[0], 10) === selectedMinPlayers
+        : true,
+    );
+
 
   const filteredGames = gamesByCategory.filter((g) => {
     const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
@@ -166,29 +183,53 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-                <div className="mb-6 space-y-4" data-aos="fade-up" data-aos-delay={350}>
-                  <button
-                    onClick={() => setSuggestOpen(true)}
-                    className="w-full bg-brand-yellow text-gray-900 font-bold py-2 rounded-lg shadow hover:bg-brand-yellow/90 transition-colors"
-                  >
-                    Non sai a cosa giocare? CLICCAMI!
-                  </button>
-                  <label htmlFor="categorySelect" className="sr-only">
-                    Filtra per categoria
-                  </label>
-                  <select
-                    id="categorySelect"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                  >
-                    <option value="">Tutte le categorie</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+
+                <div
+                  className="flex flex-col sm:flex-row gap-4 mb-6"
+                  data-aos="fade-up"
+                  data-aos-delay={350}
+                >
+                  <div>
+                    <label htmlFor="categorySelect" className="sr-only">
+                      Filtra per categoria
+                    </label>
+                    <select
+                      id="categorySelect"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutte le categorie</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="playerSelect" className="sr-only">
+                      Minimo giocatori
+                    </label>
+                    <select
+                      id="playerSelect"
+                      value={selectedMinPlayers}
+                      onChange={(e) =>
+                        setSelectedMinPlayers(
+                          e.target.value === '' ? '' : parseInt(e.target.value, 10),
+                        )
+                      }
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutti i giocatori</option>
+                      {minPlayerOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n}+
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                 </div>
                 <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
                   <label className="block text-sm mb-2" htmlFor="players-range">
