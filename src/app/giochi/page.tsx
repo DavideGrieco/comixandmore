@@ -8,6 +8,7 @@ import 'aos/dist/aos.css';
 import Navbar from '../../components/Navbar';
 import GameCard from '../../components/GameCard';
 import GameModal from '../../components/GameModal';
+import SuggestGameModal from '../../components/SuggestGameModal';
 import { fetchStrapi } from '../../utils/api';
 import type { Game } from '../../types/game';
 import type { StrapiGameItem } from '../../types/strapi';
@@ -17,6 +18,7 @@ export default function GiochiPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,6 +86,26 @@ export default function GiochiPage() {
   };
   const closeModal = () => setSelectedGame(null);
 
+  const handleRandom = () => {
+    if (games.length === 0) return;
+    const randomGame = games[Math.floor(Math.random() * games.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
+
+  const handleSuggest = (category: string) => {
+    const moodGames = games.filter((g) =>
+      g.categoria
+        .split(/\s+/)
+        .map((c) => c.trim())
+        .includes(category),
+    );
+    if (moodGames.length === 0) return;
+    const randomGame = moodGames[Math.floor(Math.random() * moodGames.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
+
   return (
     <>
       <Navbar />
@@ -125,7 +147,13 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-                <div className="mb-6" data-aos="fade-up" data-aos-delay={350}>
+                <div className="mb-6 space-y-4" data-aos="fade-up" data-aos-delay={350}>
+                  <button
+                    onClick={() => setSuggestOpen(true)}
+                    className="w-full bg-brand-yellow text-gray-900 font-bold py-2 rounded-lg shadow hover:bg-brand-yellow/90 transition-colors"
+                  >
+                    Non sai a cosa giocare? CLICCAMI!
+                  </button>
                   <label htmlFor="categorySelect" className="sr-only">
                     Filtra per categoria
                   </label>
@@ -166,6 +194,14 @@ export default function GiochiPage() {
 
       {selectedGame && (
         <GameModal game={selectedGame} onClose={closeModal} />
+      )}
+      {suggestOpen && (
+        <SuggestGameModal
+          categories={categories}
+          onRandom={handleRandom}
+          onSuggest={handleSuggest}
+          onClose={() => setSuggestOpen(false)}
+        />
       )}
     </>
   );
