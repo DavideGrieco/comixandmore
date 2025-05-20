@@ -8,6 +8,7 @@ import 'aos/dist/aos.css';
 import Navbar from '../../components/Navbar';
 import GameCard from '../../components/GameCard';
 import GameModal from '../../components/GameModal';
+import SuggestGameModal from '../../components/SuggestGameModal';
 import { fetchStrapi } from '../../utils/api';
 import type { Game } from '../../types/game';
 import type { StrapiGameItem } from '../../types/strapi';
@@ -15,9 +16,19 @@ import type { StrapiGameItem } from '../../types/strapi';
 export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+
+  // Stabiliamo i bounds e la selezione per i giocatori
+  const [playersBounds, setPlayersBounds] = useState<[number, number]>([0, 10]);
+  const [selectedPlayers, setSelectedPlayers] = useState<[number, number]>([0, 10]);
+
+  // Selezione per il minimo numero di giocatori (filtro alternativo)
+  const [minPlayerOptions, setMinPlayerOptions] = useState<number[]>([]);
+  const [selectedMinPlayers, setSelectedMinPlayers] = useState<number | ''>('');
+
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [suggestOpen, setSuggestOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [playerBounds, setPlayerBounds] = useState({ min: 0, max: 0 });
   const [selectedPlayers, setSelectedPlayers] = useState<number | null>(null);
@@ -29,16 +40,17 @@ export default function GiochiPage() {
       try {
         setError(null);
         const json = await fetchStrapi('/api/games?populate=*');
-        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || '';
+
         const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => ({
-          id:            item.id.toString(),
-          titolo:        item.titolo,
+          id: item.id.toString(),
+          titolo: item.titolo,
           descrizioneBreve: item.descrizioneBreve,
-          categoria:     item.categoria,
-          giocatori:     item.giocatori,
-          durata:        item.durata,
-          difficolta:    item.difficolta,
-          rules:         item.rules,
+          categoria: item.categoria,
+          giocatori: item.giocatori,
+          durata: item.durata,
+          difficolta: item.difficolta,
+          rules: item.rules,
           immagineCopertina: item.immagineCopertina?.url
             ? `${baseUrl}${item.immagineCopertina.url}`
             : '/img/placeholder.jpg',
@@ -46,7 +58,9 @@ export default function GiochiPage() {
             ? `${baseUrl}${item.immagineDettaglio.url}`
             : '/img/placeholder.jpg',
         }));
+
         setGames(parsedGames);
+
         const uniqueCategories = Array.from(
           new Set(
             parsedGames
@@ -56,6 +70,7 @@ export default function GiochiPage() {
           ),
         );
         setCategories(uniqueCategories);
+
 
         const playerValues = parsedGames.flatMap((g) => {
           const [minStr, maxStr] = g.giocatori.split('-');
@@ -68,6 +83,7 @@ export default function GiochiPage() {
         const maxPlayers = Math.max(...playerValues);
         setPlayerBounds({ min: minPlayers, max: maxPlayers });
         setSelectedPlayers(minPlayers);
+
       } catch (err) {
         console.error('Errore fetch giochi:', err);
         setError('Errore nel caricamento dei giochi');
@@ -79,6 +95,7 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
+
   const filteredByCategory = selectedCategory
     ? games.filter((g) =>
         g.categoria
@@ -87,6 +104,7 @@ export default function GiochiPage() {
           .includes(selectedCategory),
       )
     : games;
+
 
   const filteredGames = filteredByCategory.filter((g) => {
     if (selectedPlayers === null) return true;
@@ -103,6 +121,26 @@ export default function GiochiPage() {
   };
   const closeModal = () => setSelectedGame(null);
 
+  const handleRandom = () => {
+    if (games.length === 0) return;
+    const randomGame = games[Math.floor(Math.random() * games.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
+
+  const handleSuggest = (category: string) => {
+    const moodGames = games.filter((g) =>
+      g.categoria
+        .split(/\s+/)
+        .map((c) => c.trim())
+        .includes(category),
+    );
+    if (moodGames.length === 0) return;
+    const randomGame = moodGames[Math.floor(Math.random() * moodGames.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
+
   return (
     <>
       <Navbar />
@@ -116,7 +154,9 @@ export default function GiochiPage() {
             data-aos="fade-up"
             data-aos-delay={100}
           >
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-white">Catalogo Giochi</span>
           </nav>
@@ -144,24 +184,87 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-                <div className="mb-6" data-aos="fade-up" data-aos-delay={350}>
-                  <label htmlFor="categorySelect" className="sr-only">
-                    Filtra per categoria
-                  </label>
-                  <select
-                    id="categorySelect"
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-                  >
-                    <option value="">Tutte le categorie</option>
-                    {categories.map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
-                  </select>
+                <div
+                  className="flex flex-col sm:flex-row gap-4 mb-6"
+                  data-aos="fade-up"
+                  data-aos-delay={350}
+                >
+                  <div>
+                    <label htmlFor="categorySelect" className="sr-only">
+                      Filtra per categoria
+                    </label>
+                    <select
+                      id="categorySelect"
+                      value={selectedCategory}
+                      onChange={(e) => setSelectedCategory(e.target.value)}
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutte le categorie</option>
+                      {categories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="playerSelect" className="sr-only">
+                      Minimo giocatori
+                    </label>
+                    <select
+                      id="playerSelect"
+                      value={selectedMinPlayers}
+                      onChange={(e) =>
+                        setSelectedMinPlayers(
+                          e.target.value === '' ? '' : parseInt(e.target.value, 10),
+                        )
+                      }
+                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                    >
+                      <option value="">Tutti i giocatori</option>
+                      {minPlayerOptions.map((n) => (
+                        <option key={n} value={n}>
+                          {n}+
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
+
+                <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
+                  <label className="block text-sm mb-2" htmlFor="players-range">
+                    Giocatori: {selectedPlayers[0]} - {selectedPlayers[1]}
+                  </label>
+                  <div className="flex items-center space-x-2" id="players-range">
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[0]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          Math.min(Number(e.target.value), selectedPlayers[1]),
+                          selectedPlayers[1],
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[1]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          selectedPlayers[0],
+                          Math.max(Number(e.target.value), selectedPlayers[0]),
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                  </div>
+                </div>
+
                 {playerBounds.max > playerBounds.min && (
                   <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
                     <label htmlFor="playerSlider" className="sr-only">
@@ -183,6 +286,7 @@ export default function GiochiPage() {
                     </div>
                   </div>
                 )}
+
                 <div
                   id="lista-giochi-container"
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
@@ -204,8 +308,14 @@ export default function GiochiPage() {
         </div>
       </main>
 
-      {selectedGame && (
-        <GameModal game={selectedGame} onClose={closeModal} />
+      {selectedGame && <GameModal game={selectedGame} onClose={closeModal} />}
+      {suggestOpen && (
+        <SuggestGameModal
+          categories={categories}
+          onRandom={handleRandom}
+          onSuggest={handleSuggest}
+          onClose={() => setSuggestOpen(false)}
+        />
       )}
     </>
   );

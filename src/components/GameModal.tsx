@@ -115,7 +115,7 @@ export default function GameModal({ game, onClose }: GameModalProps) {
           </nav>
 
           {/* Contenuto Tab */}
-          <div className="mt-1 overflow-y-auto flex-1 scrollbar-hide pr-1"> {/* Applicato scrollbar-hide */}
+          <div className="mt-1 overflow-y-auto flex-1 custom-scrollbar pr-1"> {/* Scrollbar personalizzata */}
             <div key={activeTab} className="animate-tabContentShow">
               {activeTab === 'descrizione' ? (
                 <div className="space-y-3 py-4 text-sm">
