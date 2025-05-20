@@ -397,7 +397,7 @@ export default function AdminDashboard() {
             </div>
             <form
                 onSubmit={handleSubmit}
-                className="space-y-4 sm:space-y-6 max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)] overflow-y-auto scrollbar-hide"
+                className="space-y-4 sm:space-y-6 max-h-[calc(100vh-10rem)] sm:max-h-[calc(100vh-12rem)] overflow-y-auto custom-scrollbar"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {[
