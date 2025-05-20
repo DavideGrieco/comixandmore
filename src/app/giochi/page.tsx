@@ -8,6 +8,7 @@ import 'aos/dist/aos.css';
 import Navbar from '../../components/Navbar';
 import GameCard from '../../components/GameCard';
 import GameModal from '../../components/GameModal';
+import SuggestGameModal from '../../components/SuggestGameModal';
 import { fetchStrapi } from '../../utils/api';
 import type { Game } from '../../types/game';
 import type { StrapiGameItem } from '../../types/strapi';
@@ -16,9 +17,12 @@ export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+
   const [minPlayerOptions, setMinPlayerOptions] = useState<number[]>([]);
   const [selectedMinPlayers, setSelectedMinPlayers] = useState<number | ''>('');
+
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [suggestOpen, setSuggestOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +51,19 @@ export default function GiochiPage() {
             : '/img/placeholder.jpg',
         }));
         setGames(parsedGames);
+
+        // Calcola intervallo minimo e massimo di giocatori
+        const playersNumbers = parsedGames
+          .map((g) => g.giocatori.split('-').map((n) => parseInt(n, 10)))
+          .filter((arr) => arr.length === 2 && !arr.some((n) => isNaN(n)));
+        const minPlayers = playersNumbers.length
+          ? Math.min(...playersNumbers.map((p) => p[0]))
+          : 0;
+        const maxPlayers = playersNumbers.length
+          ? Math.max(...playersNumbers.map((p) => p[1]))
+          : 0;
+        setPlayersBounds([minPlayers, maxPlayers]);
+        setSelectedPlayers([minPlayers, maxPlayers]);
         const uniqueCategories = Array.from(
           new Set(
             parsedGames
@@ -76,6 +93,7 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
+
   const filteredGames = games
     .filter((g) =>
       selectedCategory
@@ -91,11 +109,38 @@ export default function GiochiPage() {
         : true,
     );
 
+
+  const filteredGames = gamesByCategory.filter((g) => {
+    const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
+    if (isNaN(minP) || isNaN(maxP)) return true;
+    return maxP >= selectedPlayers[0] && minP <= selectedPlayers[1];
+  });
+
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
     setSelectedGame(game);
   };
   const closeModal = () => setSelectedGame(null);
+
+  const handleRandom = () => {
+    if (games.length === 0) return;
+    const randomGame = games[Math.floor(Math.random() * games.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
+
+  const handleSuggest = (category: string) => {
+    const moodGames = games.filter((g) =>
+      g.categoria
+        .split(/\s+/)
+        .map((c) => c.trim())
+        .includes(category),
+    );
+    if (moodGames.length === 0) return;
+    const randomGame = moodGames[Math.floor(Math.random() * moodGames.length)];
+    setSelectedGame(randomGame);
+    setSuggestOpen(false);
+  };
 
   return (
     <>
@@ -138,6 +183,7 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
+
                 <div
                   className="flex flex-col sm:flex-row gap-4 mb-6"
                   data-aos="fade-up"
@@ -183,6 +229,40 @@ export default function GiochiPage() {
                       ))}
                     </select>
                   </div>
+
+                </div>
+                <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
+                  <label className="block text-sm mb-2" htmlFor="players-range">
+                    Giocatori: {selectedPlayers[0]} - {selectedPlayers[1]}
+                  </label>
+                  <div className="flex items-center space-x-2" id="players-range">
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[0]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          Math.min(Number(e.target.value), selectedPlayers[1]),
+                          selectedPlayers[1],
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[1]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          selectedPlayers[0],
+                          Math.max(Number(e.target.value), selectedPlayers[0]),
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                  </div>
                 </div>
                 <div
                   id="lista-giochi-container"
@@ -207,6 +287,14 @@ export default function GiochiPage() {
 
       {selectedGame && (
         <GameModal game={selectedGame} onClose={closeModal} />
+      )}
+      {suggestOpen && (
+        <SuggestGameModal
+          categories={categories}
+          onRandom={handleRandom}
+          onSuggest={handleSuggest}
+          onClose={() => setSuggestOpen(false)}
+        />
       )}
     </>
   );
