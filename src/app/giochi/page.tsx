@@ -191,12 +191,13 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-                {/* Filtri di categoria e giocatori */}
+                {/* Filtri sulla stessa riga */}
                 <div
-                  className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6 items-end"
+                  className="flex flex-wrap items-center gap-4 mb-6"
                   data-aos="fade-up"
                   data-aos-delay={350}
                 >
+                  {/* Filtro Categoria */}
                   <div>
                     <label htmlFor="categorySelect" className="sr-only">
                       Filtra per categoria
@@ -215,40 +216,23 @@ export default function GiochiPage() {
                       ))}
                     </select>
                   </div>
-                  <div>
-                    <label htmlFor="playerSelect" className="sr-only">
-                      Minimo giocatori
-                    </label>
-                    <select
-                      id="playerSelect"
-                      value={selectedMinPlayers}
-                      onChange={(e) =>
-                        setSelectedMinPlayers(
-                          e.target.value === '' ? '' : parseInt(e.target.value, 10),
-                        )
-                      }
-                      className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+
+                  {/* Slider Giocatori Minimi */}
+                  <div className="flex-1 min-w-[150px] max-w-xs">
+                    <label
+                      htmlFor="players-range"
+                      className="block text-xs mb-1 text-gray-300 select-none"
                     >
-                      <option value="">Tutti i giocatori</option>
-                      {minPlayerOptions.map((n) => (
-                        <option key={n} value={n}>
-                          {n}+
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex-1 sm:flex-none sm:w-56">
-                    <label className="block text-sm mb-2" htmlFor="players-range">
-                      Giocatori minimi: {selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
+                      Giocatori minimi: {selectedMinPlayers === '' ? 1 : selectedMinPlayers}
                     </label>
                     <input
                       type="range"
                       id="players-range"
-                      min={minPlayersBound}
-                      max={maxPlayersBound}
-                      value={selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
+                      min={1}
+                      max={12}
+                      value={selectedMinPlayers === '' ? 1 : selectedMinPlayers}
                       onChange={(e) => setSelectedMinPlayers(parseInt(e.target.value, 10))}
-                      className="range-slider"
+                      className="w-full h-1.5 rounded-full accent-yellow-400 cursor-pointer"
                     />
                   </div>
                 </div>
