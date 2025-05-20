@@ -1,10 +1,21 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Game } from '../types/game';
+// types/game.ts (o dove hai definito il tipo Game)
+export interface Game {
+  id: string;
+  titolo: string;
+  descrizioneBreve: string;
+  immagineCopertina?: string;
+  categoria: string; // Stringa di categorie separate da spazi
+  // ...altri campi del gioco
+}
+
+// GameCard.tsx
+import React, { useEffect, useState } from 'react';
+import { Game as Game2 } from '../types/game'; // Assicurati che il percorso sia corretto
 
 interface GameCardProps {
-  game: Game;
+  game: Game2;
   onClick: (id: string) => void;
-  gradientIndex?: number; 
+  gradientIndex?: number;
 }
 
 const gradients = [
@@ -24,41 +35,24 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
     clipPath: 'polygon(0% 25%, 100% 5%, 100% 100%, 0% 100%)',
   };
 
-  const categoriesRef = useRef<HTMLDivElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [categories, setCategories] = useState<string[]>([]);
 
-  const [showArrows, setShowArrows] = useState(false);
-
-  // Verifica se mostrare le frecce in base al contenuto scrollabile
+  // Estrae e imposta le categorie
   useEffect(() => {
-    const checkOverflow = () => {
-      if (!categoriesRef.current || !containerRef.current) return;
-      setShowArrows(categoriesRef.current.scrollWidth > containerRef.current.clientWidth);
-    };
-
-    checkOverflow();
-    window.addEventListener('resize', checkOverflow);
-    return () => window.removeEventListener('resize', checkOverflow);
-  }, [game.categoria]);
-
-  const scrollLeft = () => {
-    if (categoriesRef.current) {
-      categoriesRef.current.scrollBy({ left: -80, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (categoriesRef.current) {
-      categoriesRef.current.scrollBy({ left: 80, behavior: 'smooth' });
-    }
-  };
+    const catsArray = game.categoria
+      .split(/\s+/) // Divide per uno o più spazi
+      .map((c) => c.trim()) // Rimuove spazi bianchi extra da ogni categoria
+      .filter(Boolean); // Rimuove stringhe vuote risultanti (es. da spazi multipli)
+    
+    setCategories(catsArray);
+  }, [game.id, game.categoria]); // Riesegue se il gioco o le sue categorie cambiano
 
   return (
     <div
       onClick={() => onClick(game.id)}
       className="
         relative w-full h-[260px]
-        rounded-2xl overflow-hidden shadow-xl cursor-pointer 
+        rounded-2xl overflow-hidden shadow-xl cursor-pointer
         group transition-all duration-300 ease-in-out hover:shadow-2xl
       "
     >
@@ -69,7 +63,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
       />
       <div
         className={`
-          absolute bottom-0 left-0 right-0 
+          absolute bottom-0 left-0 right-0
           h-[55%]
           bg-gradient-to-br ${selectedGradient.from} ${selectedGradient.to}
           transition-all duration-300 ease-in-out z-10
@@ -81,8 +75,8 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
         style={clipPathBottomStyle}
       >
         <div>
-          <h3 
-            className={`text-lg font-bold ${selectedGradient.buttonText} mb-1 truncate`} 
+          <h3
+            className={`text-lg font-bold ${selectedGradient.buttonText} mb-1 truncate`}
             title={game.titolo}
           >
             {game.titolo}
@@ -93,78 +87,48 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
         </div>
 
         <div className="mt-auto flex items-center justify-between">
-          {/* Wrapper per frecce + categorie */}
+          {/* Contenitore per le categorie */}
           <div
-            className="flex items-center max-w-[calc(100%-90px)]"
-            ref={containerRef}
+            className="overflow-hidden max-w-[calc(100%-90px)] flex-grow" // Limita la larghezza per fare spazio al bottone "Dettagli"
           >
-            {/* Freccia sinistra */}
-            {showArrows && (
-              <button
-                onClick={e => { e.stopPropagation(); scrollLeft(); }}
-                aria-label="Scroll categorie a sinistra"
-                className="flex items-center justify-center text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 px-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            )}
-
-            {/* Categorie scrollabili */}
             <div
-              ref={categoriesRef}
-              className="flex gap-2 overflow-x-auto scrollbar-hide whitespace-nowrap"
-              style={{scrollBehavior: 'smooth'}}
+              className="flex gap-2 whitespace-nowrap" // `gap-2` per lo spazio tra i badge
             >
-              {game.categoria
-                .split(/\s+/)
-                .map((c) => c.trim())
-                .filter(Boolean)
-                .map((cat) => (
-                  <span
-                    key={cat}
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${selectedGradient.dateColor} ${
-                      selectedGradient.buttonText === 'text-gray-800'
-                        ? 'bg-black/20'
-                        : 'bg-white/20'
-                    } whitespace-nowrap`}
-                  >
-                    {cat}
-                  </span>
-                ))}
-            </div>
-
-            {/* Freccia destra */}
-            {showArrows && (
-              <button
-                onClick={e => { e.stopPropagation(); scrollRight(); }}
-                aria-label="Scroll categorie a destra"
-                className="flex items-center justify-center text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 px-1"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+              {categories.length > 0 && (
+                <span
+                  key={`${game.id}-${categories[0]}-first`}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${selectedGradient.dateColor} ${
+                    selectedGradient.buttonText === 'text-gray-800'
+                      ? 'bg-black/20'
+                      : 'bg-white/20'
+                  } whitespace-nowrap flex-shrink-0`}
+                  title={categories[0]} // Mostra il nome completo al passaggio del mouse se è troncato
                 >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            )}
+                  {categories[0]}
+                </span>
+              )}
+              {categories.length > 1 && (
+                <span
+                  key={`${game.id}-plus-more`}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium ${selectedGradient.dateColor} ${
+                    selectedGradient.buttonText === 'text-gray-800'
+                      ? 'bg-black/20'
+                      : 'bg-white/20'
+                  } whitespace-nowrap flex-shrink-0`}
+                  title={`Altre ${categories.length - 1} categorie`}
+                >
+                  +{categories.length - 1}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Bottone Dettagli */}
           <button
+            onClick={(e) => {
+              e.stopPropagation(); // Impedisce che il click sul bottone triggeri l'onClick della card
+              console.log(`Dettagli per il gioco: ${game.id}`);
+              // Qui potresti implementare la logica per mostrare i dettagli
+            }}
             className={`
               ml-3
               px-4 py-1.5
