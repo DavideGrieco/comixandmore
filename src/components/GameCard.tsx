@@ -65,15 +65,30 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
             </p>
           </div>
           <div className="flex justify-between items-center mt-2">
-            <span className={`text-xs ${selectedGradient.dateColor} opacity-90`}>
-              {game.categoria}
-            </span>
+            <div className="flex flex-wrap gap-1">
+              {game.categoria
+                .split(/\s+/)
+                .map((c) => c.trim())
+                .filter(Boolean)
+                .map((cat) => (
+                  <span
+                    key={cat}
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${selectedGradient.dateColor} ${
+                      selectedGradient.buttonText === 'text-gray-800'
+                        ? 'bg-black/20'
+                        : 'bg-white/20'
+                    }`}
+                  >
+                    {cat}
+                  </span>
+                ))}
+            </div>
             <button
               className={`
                 px-4 py-1.5
-                border ${selectedGradient.buttonBorder} rounded-lg 
+                border ${selectedGradient.buttonBorder} rounded-lg
                 text-xs font-semibold ${selectedGradient.buttonText}
-                hover:bg-white/10 dark:hover:bg-black/10 
+                hover:bg-white/10 dark:hover:bg-black/10
                 transition-colors duration-200
               `}
             >
