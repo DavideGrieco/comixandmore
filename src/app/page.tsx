@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Navbar from '../components/Navbar';
+import StatsSection from '../components/StatsSection';
 
 import { eventsData } from '../data/eventsData';
 import EventCard from '../components/EventCard';
@@ -206,6 +207,8 @@ export default function HomePage() {
             </div>
           </div>
         </section>
+
+        <StatsSection />
 
         {/* Il Nostro Bar */}
         <section id="bar" className="py-20 bg-gray-800">
