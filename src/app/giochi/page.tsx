@@ -191,8 +191,9 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
+                {/* Filtri di categoria e giocatori */}
                 <div
-                  className="flex flex-col sm:flex-row gap-4 mb-6"
+                  className="flex flex-col sm:flex-row flex-wrap gap-4 mb-6 items-end"
                   data-aos="fade-up"
                   data-aos-delay={350}
                 >
@@ -236,21 +237,20 @@ export default function GiochiPage() {
                       ))}
                     </select>
                   </div>
-                </div>
-
-                <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
-                  <label className="block text-sm mb-2" htmlFor="players-range">
-                    Giocatori minimi: {selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
-                  </label>
-                  <input
-                    type="range"
-                    id="players-range"
-                    min={minPlayersBound}
-                    max={maxPlayersBound}
-                    value={selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
-                    onChange={(e) => setSelectedMinPlayers(parseInt(e.target.value, 10))}
-                    className="w-full accent-brand-yellow h-2"
-                  />
+                  <div className="flex-1 sm:flex-none sm:w-56">
+                    <label className="block text-sm mb-2" htmlFor="players-range">
+                      Giocatori minimi: {selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
+                    </label>
+                    <input
+                      type="range"
+                      id="players-range"
+                      min={minPlayersBound}
+                      max={maxPlayersBound}
+                      value={selectedMinPlayers === '' ? minPlayersBound : selectedMinPlayers}
+                      onChange={(e) => setSelectedMinPlayers(parseInt(e.target.value, 10))}
+                      className="range-slider"
+                    />
+                  </div>
                 </div>
 
                 <div
