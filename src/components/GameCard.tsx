@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Game } from '../types/game';
 
 interface GameCardProps {
@@ -16,16 +16,41 @@ const gradients = [
 ];
 
 const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => {
-  let selectedGradient = gradients[0]; 
-  if (typeof gradientIndex === 'number' && !isNaN(gradientIndex) && gradientIndex >= 0) {
-    selectedGradient = gradients[gradientIndex % gradients.length];
-  } else if (gradientIndex !== undefined) {
-    console.warn(`GameCard per "${game.titolo}": Ricevuto gradientIndex non valido (${gradientIndex}), usando gradiente di default.`);
-  }
+  const selectedGradient = typeof gradientIndex === 'number' && !isNaN(gradientIndex) && gradientIndex >= 0
+    ? gradients[gradientIndex % gradients.length]
+    : gradients[0];
 
-  // Clip-path per il taglio obliquo
   const clipPathBottomStyle = {
     clipPath: 'polygon(0% 25%, 100% 5%, 100% 100%, 0% 100%)',
+  };
+
+  const categoriesRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const [showArrows, setShowArrows] = useState(false);
+
+  // Verifica se mostrare le frecce in base al contenuto scrollabile
+  useEffect(() => {
+    const checkOverflow = () => {
+      if (!categoriesRef.current || !containerRef.current) return;
+      setShowArrows(categoriesRef.current.scrollWidth > containerRef.current.clientWidth);
+    };
+
+    checkOverflow();
+    window.addEventListener('resize', checkOverflow);
+    return () => window.removeEventListener('resize', checkOverflow);
+  }, [game.categoria]);
+
+  const scrollLeft = () => {
+    if (categoriesRef.current) {
+      categoriesRef.current.scrollBy({ left: -80, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (categoriesRef.current) {
+      categoriesRef.current.scrollBy({ left: 80, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -49,23 +74,56 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
           bg-gradient-to-br ${selectedGradient.from} ${selectedGradient.to}
           transition-all duration-300 ease-in-out z-10
           group-hover:h-[61%]
+          flex flex-col
+          p-4 pt-[45px]
+          rounded-b-2xl
         `}
         style={clipPathBottomStyle}
       >
-        <div className="h-full p-4 pt-[45px] flex flex-col justify-between">
-          <div>
-            <h3 
-              className={`text-lg font-bold ${selectedGradient.buttonText} mb-1 truncate`} 
-              title={game.titolo}
+        <div>
+          <h3 
+            className={`text-lg font-bold ${selectedGradient.buttonText} mb-1 truncate`} 
+            title={game.titolo}
+          >
+            {game.titolo}
+          </h3>
+          <p className={`${selectedGradient.buttonText} text-xs opacity-80 line-clamp-2 leading-snug`}>
+            {game.descrizioneBreve}
+          </p>
+        </div>
+
+        <div className="mt-auto flex items-center justify-between">
+          {/* Wrapper per frecce + categorie */}
+          <div
+            className="flex items-center max-w-[calc(100%-90px)]"
+            ref={containerRef}
+          >
+            {/* Freccia sinistra */}
+            {showArrows && (
+              <button
+                onClick={e => { e.stopPropagation(); scrollLeft(); }}
+                aria-label="Scroll categorie a sinistra"
+                className="flex items-center justify-center text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 px-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            )}
+
+            {/* Categorie scrollabili */}
+            <div
+              ref={categoriesRef}
+              className="flex gap-2 overflow-x-auto scrollbar-hide whitespace-nowrap"
+              style={{scrollBehavior: 'smooth'}}
             >
-              {game.titolo}
-            </h3>
-            <p className={`${selectedGradient.buttonText} text-xs opacity-80 line-clamp-2 leading-snug`}>
-              {game.descrizioneBreve}
-            </p>
-          </div>
-          <div className="flex justify-between items-center mt-2">
-            <div className="flex flex-wrap gap-1">
               {game.categoria
                 .split(/\s+/)
                 .map((c) => c.trim())
@@ -77,24 +135,48 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, gradientIndex }) => 
                       selectedGradient.buttonText === 'text-gray-800'
                         ? 'bg-black/20'
                         : 'bg-white/20'
-                    }`}
+                    } whitespace-nowrap`}
                   >
                     {cat}
                   </span>
                 ))}
             </div>
-            <button
-              className={`
-                px-4 py-1.5
-                border ${selectedGradient.buttonBorder} rounded-lg
-                text-xs font-semibold ${selectedGradient.buttonText}
-                hover:bg-white/10 dark:hover:bg-black/10
-                transition-colors duration-200
-              `}
-            >
-              Dettagli
-            </button>
+
+            {/* Freccia destra */}
+            {showArrows && (
+              <button
+                onClick={e => { e.stopPropagation(); scrollRight(); }}
+                aria-label="Scroll categorie a destra"
+                className="flex items-center justify-center text-white hover:text-gray-300 transition-colors duration-200 flex-shrink-0 px-1"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            )}
           </div>
+
+          {/* Bottone Dettagli */}
+          <button
+            className={`
+              ml-3
+              px-4 py-1.5
+              border ${selectedGradient.buttonBorder} rounded-lg
+              text-xs font-semibold ${selectedGradient.buttonText}
+              hover:bg-white/10 dark:hover:bg-black/10
+              transition-colors duration-200
+              flex-shrink-0
+            `}
+          >
+            Dettagli
+          </button>
         </div>
       </div>
     </div>
