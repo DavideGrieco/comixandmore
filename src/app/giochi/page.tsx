@@ -14,14 +14,18 @@ import type { StrapiGameItem } from '../../types/strapi';
 
 export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     AOS.init({ duration: 600, once: true, offset: 50 });
 
     const fetchGiochi = async () => {
       try {
+        setError(null);
         const json = await fetchStrapi('/api/games?populate=*');
         const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
         const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => ({
@@ -41,8 +45,13 @@ export default function GiochiPage() {
             : '/img/placeholder.jpg',
         }));
         setGames(parsedGames);
+        const uniqueCategories = Array.from(
+          new Set(parsedGames.map((g) => g.categoria).filter(Boolean)),
+        );
+        setCategories(uniqueCategories);
       } catch (err) {
         console.error('Errore fetch giochi:', err);
+        setError('Errore nel caricamento dei giochi');
       } finally {
         setLoading(false);
       }
@@ -50,6 +59,10 @@ export default function GiochiPage() {
 
     fetchGiochi();
   }, []);
+
+  const filteredGames = selectedCategory
+    ? games.filter((g) => g.categoria === selectedCategory)
+    : games;
 
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
@@ -94,22 +107,44 @@ export default function GiochiPage() {
           <section id="catalogo" className="py-4">
             {loading ? (
               <p className="text-center text-gray-400">Caricamento giochi in corso...</p>
+            ) : error ? (
+              <p className="text-center text-red-500">{error}</p>
             ) : (
-              <div
-                id="lista-giochi-container"
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
-                data-aos="fade-up"
-                data-aos-delay={400}
-              >
-                {games.map((game, index) => (
-                  <GameCard
-                    key={game.id}
-                    game={game}
-                    onClick={openModal}
-                    gradientIndex={index % 5}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="mb-6" data-aos="fade-up" data-aos-delay={350}>
+                  <label htmlFor="categorySelect" className="sr-only">
+                    Filtra per categoria
+                  </label>
+                  <select
+                    id="categorySelect"
+                    value={selectedCategory}
+                    onChange={(e) => setSelectedCategory(e.target.value)}
+                    className="bg-gray-700 text-gray-100 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                  >
+                    <option value="">Tutte le categorie</option>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div
+                  id="lista-giochi-container"
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                  data-aos="fade-up"
+                  data-aos-delay={400}
+                >
+                  {filteredGames.map((game, index) => (
+                    <GameCard
+                      key={game.id}
+                      game={game}
+                      onClick={openModal}
+                      gradientIndex={index % 5}
+                    />
+                  ))}
+                </div>
+              </>
             )}
           </section>
         </div>
