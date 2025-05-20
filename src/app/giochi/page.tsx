@@ -17,6 +17,8 @@ export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [playersBounds, setPlayersBounds] = useState<[number, number]>([0, 0]);
+  const [selectedPlayers, setSelectedPlayers] = useState<[number, number]>([0, 0]);
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,6 +49,19 @@ export default function GiochiPage() {
             : '/img/placeholder.jpg',
         }));
         setGames(parsedGames);
+
+        // Calcola intervallo minimo e massimo di giocatori
+        const playersNumbers = parsedGames
+          .map((g) => g.giocatori.split('-').map((n) => parseInt(n, 10)))
+          .filter((arr) => arr.length === 2 && !arr.some((n) => isNaN(n)));
+        const minPlayers = playersNumbers.length
+          ? Math.min(...playersNumbers.map((p) => p[0]))
+          : 0;
+        const maxPlayers = playersNumbers.length
+          ? Math.max(...playersNumbers.map((p) => p[1]))
+          : 0;
+        setPlayersBounds([minPlayers, maxPlayers]);
+        setSelectedPlayers([minPlayers, maxPlayers]);
         const uniqueCategories = Array.from(
 
           new Set(
@@ -69,16 +84,20 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
-  const filteredGames = selectedCategory
-
+  const gamesByCategory = selectedCategory
     ? games.filter((g) =>
         g.categoria
           .split(/\s+/)
           .map((c) => c.trim())
           .includes(selectedCategory),
       )
-
     : games;
+
+  const filteredGames = gamesByCategory.filter((g) => {
+    const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
+    if (isNaN(minP) || isNaN(maxP)) return true;
+    return maxP >= selectedPlayers[0] && minP <= selectedPlayers[1];
+  });
 
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
@@ -170,6 +189,39 @@ export default function GiochiPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+                <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
+                  <label className="block text-sm mb-2" htmlFor="players-range">
+                    Giocatori: {selectedPlayers[0]} - {selectedPlayers[1]}
+                  </label>
+                  <div className="flex items-center space-x-2" id="players-range">
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[0]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          Math.min(Number(e.target.value), selectedPlayers[1]),
+                          selectedPlayers[1],
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                    <input
+                      type="range"
+                      min={playersBounds[0]}
+                      max={playersBounds[1]}
+                      value={selectedPlayers[1]}
+                      onChange={(e) =>
+                        setSelectedPlayers([
+                          selectedPlayers[0],
+                          Math.max(Number(e.target.value), selectedPlayers[0]),
+                        ])
+                      }
+                      className="flex-1 accent-brand-yellow h-2"
+                    />
+                  </div>
                 </div>
                 <div
                   id="lista-giochi-container"
