@@ -46,12 +46,14 @@ export default function GiochiPage() {
         }));
         setGames(parsedGames);
         const uniqueCategories = Array.from(
+
           new Set(
             parsedGames
               .flatMap((g) => g.categoria.split(/\s+/))
               .map((c) => c.trim())
               .filter(Boolean),
           ),
+
         );
         setCategories(uniqueCategories);
       } catch (err) {
@@ -66,12 +68,14 @@ export default function GiochiPage() {
   }, []);
 
   const filteredGames = selectedCategory
+
     ? games.filter((g) =>
         g.categoria
           .split(/\s+/)
           .map((c) => c.trim())
           .includes(selectedCategory),
       )
+
     : games;
 
   const openModal = (id: string) => {
