@@ -30,6 +30,8 @@ export default function GiochiPage() {
   const [suggestOpen, setSuggestOpen] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [playerBounds, setPlayerBounds] = useState({ min: 0, max: 0 });
+  const [selectedPlayers, setSelectedPlayers] = useState<number | null>(null);
 
   useEffect(() => {
     AOS.init({ duration: 600, once: true, offset: 50 });
@@ -59,22 +61,6 @@ export default function GiochiPage() {
 
         setGames(parsedGames);
 
-        // Calcolo intervallo minimo e massimo di giocatori
-        const playersNumbers = parsedGames
-          .map((g) => g.giocatori.split('-').map((n) => parseInt(n, 10)))
-          .filter((arr) => arr.length === 2 && !arr.some((n) => isNaN(n)));
-
-        const minPlayers = playersNumbers.length
-          ? Math.min(...playersNumbers.map((p) => p[0]))
-          : 0;
-        const maxPlayers = playersNumbers.length
-          ? Math.max(...playersNumbers.map((p) => p[1]))
-          : 0;
-
-        setPlayersBounds([minPlayers, maxPlayers]);
-        setSelectedPlayers([minPlayers, maxPlayers]);
-
-        // Categorie uniche
         const uniqueCategories = Array.from(
           new Set(
             parsedGames
@@ -85,15 +71,19 @@ export default function GiochiPage() {
         );
         setCategories(uniqueCategories);
 
-        // Opzioni min giocatori uniche
-        const uniqueMinPlayers = Array.from(
-          new Set(
-            parsedGames
-              .map((g) => parseInt(g.giocatori.split('-')[0], 10))
-              .filter((n) => !isNaN(n)),
-          ),
-        ).sort((a, b) => a - b);
-        setMinPlayerOptions(uniqueMinPlayers);
+
+        const playerValues = parsedGames.flatMap((g) => {
+          const [minStr, maxStr] = g.giocatori.split('-');
+          const min = parseInt(minStr, 10);
+          const max = parseInt(maxStr, 10);
+          const maxValue = Number.isNaN(max) ? min : max;
+          return [min, maxValue];
+        });
+        const minPlayers = Math.min(...playerValues);
+        const maxPlayers = Math.max(...playerValues);
+        setPlayerBounds({ min: minPlayers, max: maxPlayers });
+        setSelectedPlayers(minPlayers);
+
       } catch (err) {
         console.error('Errore fetch giochi:', err);
         setError('Errore nel caricamento dei giochi');
@@ -105,31 +95,25 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
-  // Filtro unificato usando sia categoria che giocatori selezionati (range)
-  const filteredGames = games
-    .filter((g: Game) => {
-      if (selectedCategory) {
-        const categoriesArray = g.categoria
+
+  const filteredByCategory = selectedCategory
+    ? games.filter((g) =>
+        g.categoria
           .split(/\s+/)
-          .map((c) => c.trim());
-        if (!categoriesArray.includes(selectedCategory)) return false;
-      }
-      return true;
-    })
-    .filter((g: Game) => {
-      if (selectedMinPlayers !== '') {
-        const minGiocatori = parseInt(g.giocatori.split('-')[0], 10);
-        return minGiocatori === selectedMinPlayers;
-      }
-      return true;
-    })
-    .filter((g: Game) => {
-      // filtro con intervallo selectedPlayers [min, max]
-      const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
-      if (isNaN(minP) || isNaN(maxP)) return true;
-      // Controlla sovrapposizione intervalli giocatori
-      return maxP >= selectedPlayers[0] && minP <= selectedPlayers[1];
-    });
+          .map((c) => c.trim())
+          .includes(selectedCategory),
+      )
+    : games;
+
+
+  const filteredGames = filteredByCategory.filter((g) => {
+    if (selectedPlayers === null) return true;
+    const [minStr, maxStr] = g.giocatori.split('-');
+    const min = parseInt(minStr, 10);
+    const max = parseInt(maxStr, 10);
+    const maxValue = Number.isNaN(max) ? min : max;
+    return selectedPlayers >= min && selectedPlayers <= maxValue;
+  });
 
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
@@ -280,6 +264,28 @@ export default function GiochiPage() {
                     />
                   </div>
                 </div>
+
+                {playerBounds.max > playerBounds.min && (
+                  <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
+                    <label htmlFor="playerSlider" className="sr-only">
+                      Giocatori
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        id="playerSlider"
+                        type="range"
+                        min={playerBounds.min}
+                        max={playerBounds.max}
+                        value={selectedPlayers ?? playerBounds.min}
+                        onChange={(e) => setSelectedPlayers(parseInt(e.target.value, 10))}
+                        className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <span className="w-8 text-sm text-gray-200 text-center">
+                        {selectedPlayers ?? playerBounds.min}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div
                   id="lista-giochi-container"
