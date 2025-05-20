@@ -125,8 +125,22 @@ export default function GameModal({ game, onClose }: GameModalProps) {
                   <p className="mt-4 text-gray-300 leading-relaxed">{game.descrizioneBreve}</p>
                 </div>
               ) : (
-                <p className="py-4 text-gray-300 whitespace-pre-wrap leading-relaxed text-sm">
-                  {game.rules}
+                <p className="py-4 text-gray-300 whitespace-pre-wrap leading-relaxed text-sm break-words">
+                  {game.rules.split(/(https?:\/\/\S+)/g).map((part, i) =>
+                    /^https?:\/\//.test(part) ? (
+                      <a
+                        key={i}
+                        href={part}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-blue underline"
+                      >
+                        {part}
+                      </a>
+                    ) : (
+                      part
+                    ),
+                  )}
                 </p>
               )}
             </div>
