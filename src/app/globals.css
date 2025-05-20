@@ -188,3 +188,23 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background-color: #6b7280; /* gray-500 */
 }
+
+/* --------------------------------------
+   RANGE SLIDER STYLING
+   -------------------------------------- */
+/* Stile di base per l'input range utilizzato nei filtri */
+.range-slider {
+  @apply appearance-none w-full h-2 bg-gray-700 rounded-md overflow-hidden;
+}
+/* Track del range per Firefox */
+.range-slider::-moz-range-track {
+  @apply bg-gray-700 h-2 rounded-md;
+}
+/* Thumb personalizzato */
+.range-slider::-webkit-slider-thumb {
+  @apply appearance-none w-4 h-4 bg-brand-yellow rounded-full cursor-pointer;
+  margin-top: -4px; /* Allinea il thumb alla traccia */
+}
+.range-slider::-moz-range-thumb {
+  @apply w-4 h-4 bg-brand-yellow rounded-full border-none cursor-pointer;
+}
