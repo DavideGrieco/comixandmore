@@ -16,14 +16,19 @@ import type { StrapiGameItem } from '../../types/strapi';
 export default function GiochiPage() {
   const [games, setGames] = useState<Game[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
+  // Stabiliamo i bounds e la selezione per i giocatori
+  const [playersBounds, setPlayersBounds] = useState<[number, number]>([0, 10]);
+  const [selectedPlayers, setSelectedPlayers] = useState<[number, number]>([0, 10]);
+
+  // Selezione per il minimo numero di giocatori (filtro alternativo)
   const [minPlayerOptions, setMinPlayerOptions] = useState<number[]>([]);
   const [selectedMinPlayers, setSelectedMinPlayers] = useState<number | ''>('');
 
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
-  const [suggestOpen, setSuggestOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [suggestOpen, setSuggestOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,16 +38,17 @@ export default function GiochiPage() {
       try {
         setError(null);
         const json = await fetchStrapi('/api/games?populate=*');
-        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL;
+        const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || '';
+
         const parsedGames: Game[] = json.data.map((item: StrapiGameItem) => ({
-          id:            item.id.toString(),
-          titolo:        item.titolo,
+          id: item.id.toString(),
+          titolo: item.titolo,
           descrizioneBreve: item.descrizioneBreve,
-          categoria:     item.categoria,
-          giocatori:     item.giocatori,
-          durata:        item.durata,
-          difficolta:    item.difficolta,
-          rules:         item.rules,
+          categoria: item.categoria,
+          giocatori: item.giocatori,
+          durata: item.durata,
+          difficolta: item.difficolta,
+          rules: item.rules,
           immagineCopertina: item.immagineCopertina?.url
             ? `${baseUrl}${item.immagineCopertina.url}`
             : '/img/placeholder.jpg',
@@ -50,20 +56,25 @@ export default function GiochiPage() {
             ? `${baseUrl}${item.immagineDettaglio.url}`
             : '/img/placeholder.jpg',
         }));
+
         setGames(parsedGames);
 
-        // Calcola intervallo minimo e massimo di giocatori
+        // Calcolo intervallo minimo e massimo di giocatori
         const playersNumbers = parsedGames
           .map((g) => g.giocatori.split('-').map((n) => parseInt(n, 10)))
           .filter((arr) => arr.length === 2 && !arr.some((n) => isNaN(n)));
+
         const minPlayers = playersNumbers.length
           ? Math.min(...playersNumbers.map((p) => p[0]))
           : 0;
         const maxPlayers = playersNumbers.length
           ? Math.max(...playersNumbers.map((p) => p[1]))
           : 0;
+
         setPlayersBounds([minPlayers, maxPlayers]);
         setSelectedPlayers([minPlayers, maxPlayers]);
+
+        // Categorie uniche
         const uniqueCategories = Array.from(
           new Set(
             parsedGames
@@ -74,6 +85,7 @@ export default function GiochiPage() {
         );
         setCategories(uniqueCategories);
 
+        // Opzioni min giocatori uniche
         const uniqueMinPlayers = Array.from(
           new Set(
             parsedGames
@@ -93,28 +105,31 @@ export default function GiochiPage() {
     fetchGiochi();
   }, []);
 
-
+  // Filtro unificato usando sia categoria che giocatori selezionati (range)
   const filteredGames = games
-    .filter((g) =>
-      selectedCategory
-        ? g.categoria
-            .split(/\s+/)
-            .map((c) => c.trim())
-            .includes(selectedCategory)
-        : true,
-    )
-    .filter((g) =>
-      selectedMinPlayers !== ''
-        ? parseInt(g.giocatori.split('-')[0], 10) === selectedMinPlayers
-        : true,
-    );
-
-
-  const filteredGames = gamesByCategory.filter((g) => {
-    const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
-    if (isNaN(minP) || isNaN(maxP)) return true;
-    return maxP >= selectedPlayers[0] && minP <= selectedPlayers[1];
-  });
+    .filter((g: Game) => {
+      if (selectedCategory) {
+        const categoriesArray = g.categoria
+          .split(/\s+/)
+          .map((c) => c.trim());
+        if (!categoriesArray.includes(selectedCategory)) return false;
+      }
+      return true;
+    })
+    .filter((g: Game) => {
+      if (selectedMinPlayers !== '') {
+        const minGiocatori = parseInt(g.giocatori.split('-')[0], 10);
+        return minGiocatori === selectedMinPlayers;
+      }
+      return true;
+    })
+    .filter((g: Game) => {
+      // filtro con intervallo selectedPlayers [min, max]
+      const [minP, maxP] = g.giocatori.split('-').map((n) => parseInt(n, 10));
+      if (isNaN(minP) || isNaN(maxP)) return true;
+      // Controlla sovrapposizione intervalli giocatori
+      return maxP >= selectedPlayers[0] && minP <= selectedPlayers[1];
+    });
 
   const openModal = (id: string) => {
     const game = games.find((g) => g.id === id) ?? null;
@@ -155,7 +170,9 @@ export default function GiochiPage() {
             data-aos="fade-up"
             data-aos-delay={100}
           >
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="hover:text-white transition-colors">
+              Home
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-white">Catalogo Giochi</span>
           </nav>
@@ -183,7 +200,6 @@ export default function GiochiPage() {
               <p className="text-center text-red-500">{error}</p>
             ) : (
               <>
-
                 <div
                   className="flex flex-col sm:flex-row gap-4 mb-6"
                   data-aos="fade-up"
@@ -229,8 +245,8 @@ export default function GiochiPage() {
                       ))}
                     </select>
                   </div>
-
                 </div>
+
                 <div className="mb-6" data-aos="fade-up" data-aos-delay={360}>
                   <label className="block text-sm mb-2" htmlFor="players-range">
                     Giocatori: {selectedPlayers[0]} - {selectedPlayers[1]}
@@ -264,6 +280,7 @@ export default function GiochiPage() {
                     />
                   </div>
                 </div>
+
                 <div
                   id="lista-giochi-container"
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
@@ -285,9 +302,7 @@ export default function GiochiPage() {
         </div>
       </main>
 
-      {selectedGame && (
-        <GameModal game={selectedGame} onClose={closeModal} />
-      )}
+      {selectedGame && <GameModal game={selectedGame} onClose={closeModal} />}
       {suggestOpen && (
         <SuggestGameModal
           categories={categories}
