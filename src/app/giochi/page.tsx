@@ -135,13 +135,13 @@ export default function GiochiPage() {
     setSuggestOpen(false);
   };
 
-  const handleSuggest = (category: string) => {
-    const moodGames = games.filter((g) =>
-      g.categoria
+  const handleSuggest = (moods: string[]) => {
+    const moodGames = games.filter((g) => {
+      const gameCats = g.categoria
         .split(/\s+/)
-        .map((c) => c.trim())
-        .includes(category),
-    );
+        .map((c) => c.trim());
+      return moods.some((m) => gameCats.includes(m));
+    });
     if (moodGames.length === 0) return;
     const randomGame = moodGames[Math.floor(Math.random() * moodGames.length)];
     setSelectedGame(randomGame);
@@ -183,6 +183,19 @@ export default function GiochiPage() {
           >
             Scopri la nostra selezione di giochi da tavolo, perfetti per ogni serata!
           </p>
+
+          <div
+            className="mb-6 text-center"
+            data-aos="fade-up"
+            data-aos-delay={320}
+          >
+            <button
+              onClick={() => setSuggestOpen(true)}
+              className="bg-brand-yellow text-gray-900 font-semibold px-4 py-2 rounded-lg hover:bg-brand-yellow/90 transition-colors"
+            >
+              Non sai a cosa giocare? <span className="uppercase">CLICCAMI!</span>
+            </button>
+          </div>
 
           <section id="catalogo" className="py-4">
             {loading ? (

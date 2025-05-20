@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState } from 'react';
 interface SuggestGameModalProps {
   categories: string[];
   onRandom: () => void;
-  onSuggest: (category: string) => void;
+  onSuggest: (categories: string[]) => void;
   onClose: () => void;
 }
 
@@ -17,7 +17,7 @@ const IconClose = () => (
 
 export default function SuggestGameModal({ categories, onRandom, onSuggest, onClose }: SuggestGameModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null);
-  const [mood, setMood] = useState('');
+  const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -56,25 +56,31 @@ export default function SuggestGameModal({ categories, onRandom, onSuggest, onCl
           Gioco casuale
         </button>
         <div>
-          <label htmlFor="moodSelect" className="block text-sm font-medium text-gray-300 mb-1">
+          <label className="block text-sm font-medium text-gray-300 mb-1">
             Scegli un mood
           </label>
-          <select
-            id="moodSelect"
-            value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            className="w-full bg-gray-700 text-gray-100 rounded-md px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-          >
-            <option value="">Seleziona...</option>
+          <div className="max-h-48 overflow-y-auto mb-3 space-y-1">
             {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
+              <label key={cat} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  value={cat}
+                  checked={selectedMoods.includes(cat)}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setSelectedMoods((prev) =>
+                      checked ? [...prev, cat] : prev.filter((c) => c !== cat),
+                    );
+                  }}
+                  className="text-brand-blue focus:ring-brand-blue"
+                />
+                <span>{cat}</span>
+              </label>
             ))}
-          </select>
+          </div>
           <button
-            onClick={() => mood && onSuggest(mood)}
-            disabled={!mood}
+            onClick={() => selectedMoods.length && onSuggest(selectedMoods)}
+            disabled={selectedMoods.length === 0}
             className="w-full bg-brand-blue text-white font-semibold px-4 py-2 rounded-lg hover:bg-brand-blue/90 transition-colors disabled:opacity-50"
           >
             Suggerisci
