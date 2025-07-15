@@ -190,6 +190,46 @@ body {
 }
 
 /* --------------------------------------
+   MENU BOOK STYLES
+   -------------------------------------- */
+.book-container {
+  background: linear-gradient(145deg, #92400e, #78350f);
+  box-shadow: 
+    0 20px 40px rgba(0,0,0,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.book-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 100%;
+  background: linear-gradient(to bottom, #451a03, #78350f, #451a03);
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Effetto carta per le pagine */
+.bg-cream {
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(120, 53, 15, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(146, 64, 14, 0.1) 0%, transparent 50%),
+    linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+}
+
+/* Animazione flip della pagina */
+.rotateY-180 {
+  transform: rotateY(180deg);
+}
+
+/* Stile per il font serif nelle pagine del menu */
+.font-serif {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+/* --------------------------------------
    RANGE SLIDER STYLING
    -------------------------------------- */
 /* Stile di base per l'input range utilizzato nei filtri */

@@ -250,6 +250,15 @@ export default function HomePage() {
                   Il nostro menu è pensato per soddisfare ogni palato, con
                   ingredienti freschi e proposte per ogni momento della giornata.
                 </p>
+                <div className="mt-8">
+                  <a
+                    href="/menu"
+                    className="inline-block bg-brand-yellow text-gray-900 font-semibold py-3 px-6 rounded-lg hover:bg-yellow-400 transition-colors duration-300 shadow-lg transform hover:scale-105"
+                  >
+                    <i className="fas fa-book-open mr-2"></i>
+                    Esplora Menu
+                  </a>
+                </div>
               </div>
               <div data-aos="fade-left" data-aos-delay="400">
                 <img

@@ -7,6 +7,7 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Chi Siamo', href: '/#chi-siamo' },
     { label: 'Catalogo Giochi', href: '/giochi' },
+    { label: 'Menu', href: '/menu' },
     { label: 'Il Bar', href: '/#bar' },
     { label: 'Eventi', href: '/#eventi' },
     { label: 'Contatti', href: '/#contatti' },
