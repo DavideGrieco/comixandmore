@@ -4,6 +4,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Navbar from '../components/Navbar';
 import StatsSection from '../components/StatsSection';
+import GameBoard from '../components/GameBoard';
 
 import { eventsData } from '../data/eventsData';
 import EventCard from '../components/EventCard';
@@ -130,67 +131,10 @@ export default function HomePage() {
               Dai classici intramontabili alle ultime novità. Noleggiali al
               tavolo!
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-              {/* Qui ripeti le 6 “card” */}
-              {[
-                {
-                  icon: 'fa-dice-d20',
-                  title: 'Giochi di Ruolo & Strategia',
-                  text:
-                    'Immergiti in avventure epiche o pianifica la tua vittoria. Perfetti per serate intense.',
-                  delay: 300,
-                },
-                {
-                  icon: 'fa-users',
-                  title: 'Party Games',
-                  text:
-                    'Risate garantite! Ideali per gruppi numerosi e per rompere il ghiaccio.',
-                  delay: 400,
-                },
-                {
-                  icon: 'fa-puzzle-piece',
-                  title: 'Giochi per Famiglie',
-                  text:
-                    'Divertimento per tutte le età. Semplici da imparare, difficili da smettere.',
-                  delay: 500,
-                },
-                {
-                  icon: 'fa-chess-knight',
-                  title: 'Grandi Classici',
-                  text:
-                    'Rispolvera i tuoi preferiti o scopri i giochi che hanno fatto la storia.',
-                  delay: 300,
-                },
-                {
-                  icon: 'fa-brain',
-                  title: 'Eurogames & American',
-                  text:
-                    'Per i palati fini: meccaniche complesse, ambientazioni immersive e sfide avvincenti.',
-                  delay: 400,
-                },
-                {
-                  icon: 'fa-plus-circle',
-                  title: 'E Molto Altro...',
-                  text:
-                    'La nostra collezione è in continua espansione. Chiedi al nostro staff!',
-                  delay: 500,
-                },
-              ].map(({ icon, title, text, delay }) => (
-                <div
-                  key={title}
-                  className="card"
-                  data-aos="fade-up"
-                  data-aos-delay={delay}
-                >
-                  <div className={`text-5xl brand-yellow mb-4`}>
-                    <i className={`fas ${icon}`} />
-                  </div>
-                  <h3 className="text-2xl font-semibold text-white mb-2">
-                    {title}
-                  </h3>
-                  <p className="text-gray-400">{text}</p>
-                </div>
-              ))}
+            
+            {/* Interactive Game Board */}
+            <div className="max-w-6xl mx-auto" data-aos="fade-up" data-aos-delay="300">
+              <GameBoard />
             </div>
 
             <div
