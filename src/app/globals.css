@@ -193,10 +193,11 @@ body {
    MENU BOOK STYLES
    -------------------------------------- */
 .book-container {
-  background: linear-gradient(145deg, #92400e, #78350f);
+  background: linear-gradient(145deg, #374151, #1f2937);
+  border: 2px solid #4b5563;
   box-shadow: 
     0 20px 40px rgba(0,0,0,0.3),
-    inset 0 1px 0 rgba(255,255,255,0.1);
+    inset 0 1px 0 rgba(59, 130, 246, 0.1);
 }
 
 .book-container::before {
@@ -206,22 +207,46 @@ body {
   left: 50%;
   width: 2px;
   height: 100%;
-  background: linear-gradient(to bottom, #451a03, #78350f, #451a03);
+  background: linear-gradient(to bottom, #1f2937, #374151, #1f2937);
   transform: translateX(-50%);
   box-shadow: 0 0 10px rgba(0,0,0,0.5);
 }
 
-/* Effetto carta per le pagine */
-.bg-cream {
-  background: 
-    radial-gradient(circle at 20% 80%, rgba(120, 53, 15, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(146, 64, 14, 0.1) 0%, transparent 50%),
-    linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%);
+/* Prospettiva per l'effetto 3D */
+.perspective-1000 {
+  perspective: 1000px;
 }
 
-/* Animazione flip della pagina */
-.rotateY-180 {
-  transform: rotateY(180deg);
+/* Pagina del libro con animazione flip */
+.book-page {
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+.book-page.flipping {
+  transform: rotateY(-15deg) scale(0.95);
+}
+
+.page-content {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Frecce di navigazione eleganti */
+.nav-arrow {
+  @apply bg-gray-700 hover:bg-brand-blue text-gray-300 hover:text-white 
+         p-3 rounded-full shadow-lg transition-all duration-300 
+         transform hover:scale-110 hover:shadow-xl;
+}
+
+.nav-arrow:hover {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Contatore pagina */
+.page-counter {
+  @apply bg-gray-800 px-4 py-2 rounded-full border border-gray-600 
+         shadow-lg backdrop-blur-sm;
 }
 
 /* Stile per il font serif nelle pagine del menu */

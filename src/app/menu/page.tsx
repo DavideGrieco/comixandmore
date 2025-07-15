@@ -103,7 +103,7 @@ export default function MenuPage() {
       setTimeout(() => {
         setCurrentPage(currentPage + 1);
         setIsFlipping(false);
-      }, 300);
+      }, 600);
     }
   };
 
@@ -113,7 +113,7 @@ export default function MenuPage() {
       setTimeout(() => {
         setCurrentPage(currentPage - 1);
         setIsFlipping(false);
-      }, 300);
+      }, 600);
     }
   };
 
@@ -123,7 +123,7 @@ export default function MenuPage() {
       setTimeout(() => {
         setCurrentPage(pageIndex);
         setIsFlipping(false);
-      }, 300);
+      }, 600);
     }
   };
 
@@ -133,140 +133,127 @@ export default function MenuPage() {
     <>
       <Navbar />
       
-      <main className="pt-28 pb-16 bg-gradient-to-br from-amber-50 to-orange-100 min-h-screen">
+      <main className="pt-28 pb-16 bg-gray-900 text-gray-100 min-h-screen">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <nav 
             aria-label="Breadcrumb" 
-            className="text-sm text-gray-600 mb-6"
+            className="text-sm text-gray-400 mb-6"
             data-aos="fade-up"
           >
-            <Link href="/" className="hover:text-amber-700 transition-colors">
+            <Link href="/" className="hover:text-brand-blue transition-colors">
               Home
             </Link>
             <span className="mx-2">/</span>
-            <span className="text-amber-800 font-medium">Menu</span>
+            <span className="text-brand-yellow font-medium">Menu</span>
           </nav>
 
           {/* Titolo */}
           <div className="text-center mb-12" data-aos="fade-down">
-            <h1 className="text-4xl md:text-5xl font-bold text-amber-900 mb-4">
-              Il Nostro Menu
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Il Nostro <span className="text-brand-blue">Menu</span>
             </h1>
-            <p className="text-lg text-amber-700 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
               Scopri le nostre specialità sfogliando il menu come un vero libro
             </p>
           </div>
 
           {/* Libro Menu */}
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-5xl mx-auto perspective-1000">
             <div 
-              className="relative bg-amber-900 rounded-lg shadow-2xl p-8 book-container"
+              className="relative book-container rounded-xl shadow-2xl p-8"
               data-aos="zoom-in"
               data-aos-delay="200"
             >
-              {/* Copertina del libro */}
-              <div className="absolute inset-0 bg-gradient-to-br from-amber-800 to-amber-900 rounded-lg shadow-inner"></div>
-              
-              {/* Pagina del menu */}
-              <div className={`relative bg-cream rounded-md shadow-lg min-h-[600px] transition-all duration-300 ${isFlipping ? 'transform rotateY-180' : ''}`}>
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-50 to-orange-50 rounded-md"></div>
-                
-                {/* Contenuto della pagina */}
-                <div className="relative p-8 md:p-12 h-full">
-                  {/* Header della categoria */}
-                  <div className="text-center mb-8 border-b-2 border-amber-300 pb-6">
-                    <div className="text-5xl text-amber-700 mb-4">
-                      <i className={`fas ${currentCategory.icon}`}></i>
-                    </div>
-                    <h2 className="text-3xl md:text-4xl font-bold text-amber-900 font-serif">
-                      {currentCategory.title}
-                    </h2>
-                  </div>
-
-                  {/* Lista items */}
-                  <div className="space-y-6">
-                    {currentCategory.items.map((item, index) => (
-                      <div 
-                        key={item.name}
-                        className="flex justify-between items-start border-b border-dotted border-amber-300 pb-4 hover:bg-amber-50/50 rounded-lg p-3 transition-colors"
-                        data-aos="fade-up"
-                        data-aos-delay={index * 100}
-                      >
-                        <div className="flex-1">
-                          <h3 className="text-xl font-semibold text-amber-900 mb-1 font-serif">
-                            {item.name}
-                          </h3>
-                          {item.description && (
-                            <p className="text-amber-700 text-sm italic">
-                              {item.description}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right ml-4">
-                          <span className="text-xl font-bold text-amber-800">
-                            {item.price}
-                          </span>
-                        </div>
+              {/* Pagina del menu con effetto flip */}
+              <div className={`book-page ${isFlipping ? 'flipping' : ''}`}>
+                <div className="page-content bg-gray-800 rounded-lg shadow-lg min-h-[600px] border border-gray-700">
+                  {/* Contenuto della pagina */}
+                  <div className="p-8 md:p-12 h-full">
+                    {/* Header della categoria */}
+                    <div className="text-center mb-8 border-b-2 border-brand-blue pb-6">
+                      <div className="text-5xl text-brand-yellow mb-4">
+                        <i className={`fas ${currentCategory.icon}`}></i>
                       </div>
-                    ))}
+                      <h2 className="text-3xl md:text-4xl font-bold text-white">
+                        {currentCategory.title}
+                      </h2>
+                    </div>
+
+                    {/* Lista items */}
+                    <div className="space-y-6">
+                      {currentCategory.items.map((item, index) => (
+                        <div 
+                          key={item.name}
+                          className="flex justify-between items-start border-b border-dotted border-gray-600 pb-4 hover:bg-gray-700/30 rounded-lg p-3 transition-colors"
+                          data-aos="fade-up"
+                          data-aos-delay={index * 100}
+                        >
+                          <div className="flex-1">
+                            <h3 className="text-xl font-semibold text-white mb-1">
+                              {item.name}
+                            </h3>
+                            {item.description && (
+                              <p className="text-gray-400 text-sm italic">
+                                {item.description}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right ml-4">
+                            <span className="text-xl font-bold text-brand-yellow">
+                              {item.price}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Controlli di navigazione */}
-              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-center space-x-4">
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center space-x-6">
                 <button
                   onClick={prevPage}
                   disabled={currentPage === 0}
-                  className="bg-amber-700 hover:bg-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-3 rounded-full shadow-lg transition-colors"
+                  className="nav-arrow nav-arrow-left disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Pagina precedente"
                 >
-                  <i className="fas fa-chevron-left"></i>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </button>
 
-                {/* Indicatori pagina */}
-                <div className="flex space-x-2">
-                  {menuData.map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => goToPage(index)}
-                      className={`w-3 h-3 rounded-full transition-colors ${
-                        index === currentPage 
-                          ? 'bg-amber-700' 
-                          : 'bg-amber-300 hover:bg-amber-500'
-                      }`}
-                      aria-label={`Vai alla pagina ${index + 1}`}
-                    />
-                  ))}
+                {/* Numerazione pagina */}
+                <div className="page-counter">
+                  <span className="text-brand-yellow font-semibold text-lg">
+                    {currentPage + 1} / {totalPages}
+                  </span>
                 </div>
 
                 <button
                   onClick={nextPage}
                   disabled={currentPage === totalPages - 1}
-                  className="bg-amber-700 hover:bg-amber-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-3 rounded-full shadow-lg transition-colors"
+                  className="nav-arrow nav-arrow-right disabled:opacity-30 disabled:cursor-not-allowed"
                   aria-label="Pagina successiva"
                 >
-                  <i className="fas fa-chevron-right"></i>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </button>
-              </div>
-
-              {/* Numero pagina */}
-              <div className="absolute bottom-4 right-8 text-amber-700 font-serif">
-                {currentPage + 1} / {totalPages}
               </div>
             </div>
           </div>
 
           {/* Informazioni aggiuntive */}
           <div className="text-center mt-12" data-aos="fade-up" data-aos-delay="400">
-            <p className="text-amber-700 mb-4">
-              <i className="fas fa-info-circle mr-2"></i>
+            <p className="text-gray-400 mb-4">
+              <i className="fas fa-info-circle mr-2 text-brand-blue"></i>
               I prezzi possono variare senza preavviso
             </p>
             <Link 
               href="/#contatti"
-              className="inline-block bg-amber-700 hover:bg-amber-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg"
+              className="inline-block bg-brand-blue hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg"
             >
               <i className="fas fa-phone mr-2"></i>
               Prenota il tuo tavolo
