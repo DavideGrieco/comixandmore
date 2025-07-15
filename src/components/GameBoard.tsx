@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { JSX } from 'react/jsx-runtime';
 
 interface GameCategory {
   id: number;
@@ -89,7 +90,7 @@ export default function GameBoard() {
   };
 
   const getDiceFace = (value: number) => {
-    const dots = [];
+    const dots: JSX.Element[] = [];
     const positions = [
       [], // 0 (non usato)
       [[50, 50]], // 1
@@ -112,6 +113,7 @@ export default function GameBoard() {
 
     return dots;
   };
+
 
   const activeCategory = gameCategories.find(cat => cat.id === activeSquare);
 
