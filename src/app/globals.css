@@ -249,6 +249,54 @@ body {
          shadow-lg backdrop-blur-sm;
 }
 
+/* --------------------------------------
+   DADO 3D STYLES
+   -------------------------------------- */
+.dice-3d {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.dice-face {
+  position: absolute;
+  width: 96px;
+  height: 96px;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border: 3px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 
+    inset 0 2px 4px rgba(255,255,255,0.8),
+    inset 0 -2px 4px rgba(0,0,0,0.1),
+    0 4px 8px rgba(0,0,0,0.3);
+}
+
+.dice-front {
+  transform: translateZ(48px);
+}
+
+.dice-back {
+  transform: rotateY(180deg) translateZ(48px);
+}
+
+.dice-right {
+  transform: rotateY(90deg) translateZ(48px);
+}
+
+.dice-left {
+  transform: rotateY(-90deg) translateZ(48px);
+}
+
+.dice-top {
+  transform: rotateX(90deg) translateZ(48px);
+}
+
+.dice-bottom {
+  transform: rotateX(-90deg) translateZ(48px);
+}
+
 /* Stile per il font serif nelle pagine del menu */
 .font-serif {
   font-family: 'Georgia', 'Times New Roman', serif;
